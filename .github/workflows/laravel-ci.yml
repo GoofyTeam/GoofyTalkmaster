@@ -12,11 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Étape 1 : Vérifier le code source
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Étape 2 : Configurer PHP (AVANT d'utiliser php)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -24,29 +22,24 @@ jobs:
           extensions: mbstring, pdo, tokenizer, xml, ctype, fileinfo
           coverage: none
 
-      # Étape 3 : Installer les dépendances
       - name: Install dependencies
         working-directory: ./back
         run: composer install --prefer-dist --no-progress
 
-      # Étape 4 : Configurer l'environnement de test (APRÈS avoir installé PHP)
       - name: Setup environment
         working-directory: ./back
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      # Étape 5 : Lancer le linter et corriger les fichiers
-      - name: Run Pint linter (with fix)
+      - name: Run Pint linter (check only)
         working-directory: ./back
         run: ./vendor/bin/pint --verbose --test --dirty
 
-      # Étape 6 : Lancer Larastan (PHPStan)
       - name: Run Larastan (PHPStan)
         working-directory: ./back
         run: ./vendor/bin/phpstan analyse --memory-limit=4G
 
-      # Étape 7 : Lancer les tests unitaires
       - name: Run PHPUnit tests
         working-directory: ./back
         run: ./vendor/bin/phpunit
