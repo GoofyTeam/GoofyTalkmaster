@@ -14,8 +14,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
 RUN docker-php-ext-configure intl && \
   docker-php-ext-install -j$(nproc) \
   bcmath \
-  # pdo_mysql \
-  pdo_pgsql \  
+  pdo_pgsql \
   opcache \
   pcntl \
   intl \

@@ -17,4 +17,4 @@ test:
 	docker compose exec back-talkmaster ./vendor/bin/phpunit
 
 larastan:
-	docker compose exec laravel ./vendor/bin/phpstan analyse --memory-limit=4G
+	docker compose exec back-talkmaster ./vendor/bin/phpstan analyse --memory-limit=4G

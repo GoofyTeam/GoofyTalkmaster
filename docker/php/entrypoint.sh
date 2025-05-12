@@ -135,8 +135,9 @@ if [[ ! -f "$WEB_ROOT/storage/logs/laravel.log" ]]; then
   touch "$WEB_ROOT/storage/logs/laravel.log"
 fi
 
-chmod -R 777 "$WEB_ROOT/storage"
-info "Storage folder permissions updated (777)."
+chown -R www-data:www-data "$WEB_ROOT/storage"
+chmod -R 775 "$WEB_ROOT/storage"
+info "Storage folder ownership set to www-data and permissions updated (775)."
 
 info "Waiting for database connection to be ready..."
 DB_READY=0
