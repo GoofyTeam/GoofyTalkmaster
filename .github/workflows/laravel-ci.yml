@@ -1,0 +1,68 @@
+name: Laravel CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  laravel-ci:
+    name: Laravel CI Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo, tokenizer, xml, ctype, fileinfo
+          coverage: xdebug # Activation de Xdebug pour la couverture de code
+          tools: composer:v2
+
+      - name: Restore Composer cache
+        uses: actions/cache@v3
+        with:
+          path: ./back/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('./back/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        working-directory: ./back
+        run: composer install --prefer-dist --no-progress
+
+      - name: Setup environment
+        working-directory: ./back
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Pint linter (check only)
+        working-directory: ./back
+        run: ./vendor/bin/pint --verbose --test --dirty
+
+      - name: Run Larastan (PHPStan)
+        working-directory: ./back
+        run: ./vendor/bin/phpstan analyse --memory-limit=4G
+
+      - name: Run PHPUnit tests with coverage
+        working-directory: ./back
+        run: XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-text > coverage-summary.txt
+
+      - name: Create test coverage report summary
+        if: always()
+        working-directory: ./back
+        run: |
+          echo "## 📊 Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat coverage-summary.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./back/coverage.xml
