@@ -1,8 +1,24 @@
 # yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
 
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
+    install-root-deps:
+      root: "."
+      run: |
+        if git diff --quiet HEAD -- package-lock.json package.json; then
+          echo "No changes in dependencies. Skipping npm install.";
+        else
+          npm install;
+        fi
+    install-front-deps:
+      root: "front"
+      run: |
+        if git diff --quiet HEAD -- front/package-lock.json front/package.json; then
+          echo "No changes in dependencies. Skipping npm install.";
+        else
+          npm install;
+        fi
     biome-check:
       root: "front"
       glob: "*.{js,ts,jsx,tsx,json,jsonc}"
