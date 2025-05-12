@@ -20,7 +20,16 @@ jobs:
         with:
           php-version: "8.4"
           extensions: mbstring, pdo, tokenizer, xml, ctype, fileinfo
-          coverage: none
+          coverage: xdebug # Activation de Xdebug pour la couverture de code
+          tools: composer:v2
+
+      - name: Restore Composer cache
+        uses: actions/cache@v3
+        with:
+          path: ./back/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('./back/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Install dependencies
         working-directory: ./back
@@ -40,6 +49,20 @@ jobs:
         working-directory: ./back
         run: ./vendor/bin/phpstan analyse --memory-limit=4G
 
-      - name: Run PHPUnit tests
+      - name: Run PHPUnit tests with coverage
         working-directory: ./back
-        run: ./vendor/bin/phpunit
+        run: XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-text > coverage-summary.txt
+
+      - name: Create test coverage report summary
+        if: always()
+        working-directory: ./back
+        run: |
+          echo "## 📊 Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat coverage-summary.txt >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage report as artifact
+        if: always() && env.ACTIONS_RUNTIME_TOKEN != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: ./back/coverage.xml
