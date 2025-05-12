@@ -1,0 +1,30 @@
+* text=auto eol=lf
+*.sh text eol=lf
+
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+*.scss diff=scss
+*.js diff=javascript
+*.json diff=json
+*.yml diff=yaml
+*.xml diff=xml
+*.txt diff=unix
+*.lock diff=lock
+*.log diff=log
+*.sql diff=sql
+*.xml diff=xml
+*.txt diff=unix
+*.csv diff=csv
+*.env diff=env
+*.gitignore diff=gitignore
+*.gitlab-ci.yml diff=gitlab-ci
+*.gitlab-ci.yml diff=gitlab-ci
+*.gitlab-ci.yml diff=gitlab-ci
+*.gitlab-ci.yml diff=gitlab-ci
+
+/.github export-ignore
+CHANGELOG.md export-ignore
+.styleci.yml export-ignore
