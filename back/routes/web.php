@@ -7,5 +7,6 @@ Route::get('/', function () {
         'version' => '1.0.0',
         'name' => 'Laravel API',
         'description' => 'This is a simple API built with Laravel.',
+
     ]);
 });
