@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      root: "front"
+      glob: "*.{js,ts,jsx,tsx,json,jsonc}"
+      run: "npx biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}"
+
+commit-msg:
+  commands:
+    verify-commit-msg:
+      run: node ./scripts/verify-commit-msg.js {1}
+
+pre-push:
+  commands:
+    install-hooks:
+      run: "echo 'Hooks lefthook installés'"
