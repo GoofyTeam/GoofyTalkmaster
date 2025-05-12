@@ -1,0 +1,23 @@
+{
+  "name": "goofytalkmaster",
+  "version": "1.0.0",
+  "description": "Talkmaster est une application web complète de gestion de conférences. Elle permet aux conférenciers de proposer des talks et aux organisateurs de les valider, planifier et publier dans un planning consultable par tous.\r Le projet est structuré en monorepo avec un backend Laravel et un frontend React.",
+  "homepage": "https://github.com/GoofyTeam/GoofyTalkmaster#readme",
+  "bugs": {
+    "url": "https://github.com/GoofyTeam/GoofyTalkmaster/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoofyTeam/GoofyTalkmaster.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "lefthook": "^1.11.12"
+  }
+}
