@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('name', 'last_name')->nullable(false);
             $table->string('first_name')->after('email')->nullable(false);
             $table->string('profile_picture')->after('first_name')->nullable();
             $table->text('description')->after('profile_picture')->nullable();
@@ -38,7 +37,6 @@ return new class extends Migration
             $table->dropColumn('description');
             $table->dropColumn('role');
             $table->dropSoftDeletes();
-            $table->renameColumn('last_name', 'name');
         });
     }
 };
