@@ -12,15 +12,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $guarded = [
+        'id',
     ];
 
     /**
@@ -44,5 +37,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected function isPublic(): bool
+    {
+        return $this->role === 'public';
+    }
+
+    protected function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
+    protected function isSpeaker(): bool
+    {
+        return $this->role === 'speaker';
+    }
+
+    protected function isOrganizer(): bool
+    {
+        return $this->role === 'organizer';
     }
 }
