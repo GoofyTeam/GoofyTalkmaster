@@ -18,3 +18,6 @@ test:
 
 larastan:
 	docker compose exec back-talkmaster ./vendor/bin/phpstan analyse --memory-limit=4G
+
+fresh:
+	docker compose exec back-talkmaster php artisan migrate:fresh --seed

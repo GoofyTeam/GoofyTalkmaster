@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "dedoc/scramble": "^0.12.19",
+        "laravel/fortify": "^1.25",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.31",
         "laravel/tinker": "^2.10.1",
