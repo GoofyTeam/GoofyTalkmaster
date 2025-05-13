@@ -9,16 +9,26 @@ RUN --mount=type=cache,target=/var/cache/apk \
   postgresql-dev \
   icu-dev \
   libzip-dev \
+  pcre-dev \
+  libpng-dev \
+  libjpeg-turbo-dev \
+  libwebp-dev \
+  freetype-dev \
   $PHPIZE_DEPS
 
-RUN docker-php-ext-configure intl && \
-  docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-configure intl \
+  && docker-php-ext-configure gd \
+  --with-freetype \
+  --with-jpeg \
+  --with-webp \
+  && docker-php-ext-install -j$(nproc) \
   bcmath \
   pdo_pgsql \
   opcache \
   pcntl \
   intl \
-  zip
+  zip \
+  gd
 
 RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
   && pecl install redis \
