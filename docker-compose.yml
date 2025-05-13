@@ -8,7 +8,8 @@ services:
     environment:
       IGNITION_LOCAL_SITES_PATH: "${PWD:-/var/www/html}"
     volumes:
-      - "./back/:/var/www/html"
+      - "./back/:/var/www/html:delegated"
+      - laravel-storage:/var/www/html/storage
     networks:
       - talkmaster
     depends_on:
@@ -86,4 +87,6 @@ volumes:
   redis-talkmaster:
     driver: local
   mailpit-talkmaster:
+    driver: local
+  laravel-storage:
     driver: local
