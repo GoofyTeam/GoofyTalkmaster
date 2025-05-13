@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Http\Middleware\EnsureUserIsOrganizer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 class EnsureUserIsOrganizerTest extends TestCase
 {

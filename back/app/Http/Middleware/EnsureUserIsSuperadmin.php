@@ -15,9 +15,10 @@ class EnsureUserIsSuperadmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() === null || !$request->user()->isSuperAdmin()) {
+        if ($request->user() === null || ! $request->user()->isSuperAdmin()) {
             abort(Response::HTTP_FORBIDDEN, 'You are not authorized to access this resource.');
         }
+
         return $next($request);
     }
 }

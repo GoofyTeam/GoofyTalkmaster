@@ -15,9 +15,10 @@ class EnsureUserIsPublic
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() === null || !$request->user()->isPublic()) {
+        if ($request->user() === null || ! $request->user()->isPublic()) {
             abort(Response::HTTP_FORBIDDEN, 'You are not authorized to access this resource.');
         }
+
         return $next($request);
     }
 }

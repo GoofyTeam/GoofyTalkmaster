@@ -15,9 +15,10 @@ class EnsureUserIsOrganizer
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() === null || !$request->user()->isOrganizer()) {
+        if ($request->user() === null || ! $request->user()->isOrganizer()) {
             abort(Response::HTTP_FORBIDDEN, 'You are not authorized to access this resource.');
         }
+
         return $next($request);
     }
 }

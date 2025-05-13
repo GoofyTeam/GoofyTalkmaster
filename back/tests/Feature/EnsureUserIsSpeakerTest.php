@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Http\Middleware\EnsureUserIsSpeaker;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 class EnsureUserIsSpeakerTest extends TestCase
 {
