@@ -22,7 +22,7 @@ pre-commit:
     biome-check:
       root: "front"
       glob: "*.{js,ts,jsx,tsx,json,jsonc}"
-      run: "npx biome check --fix --unsafe && npx biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}"
+      run: "npx biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}"
 
 commit-msg:
   commands:
