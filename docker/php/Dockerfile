@@ -83,6 +83,11 @@ RUN chmod +x /usr/local/bin/entrypoint.sh && \
   $PHP_INI_DIR/conf.d \
   /tmp
 
+# Configuration des permissions pour Laravel
+RUN mkdir -p $WORKDIR/storage/logs $WORKDIR/storage/framework/cache $WORKDIR/storage/framework/sessions $WORKDIR/storage/framework/views $WORKDIR/bootstrap/cache && \
+  chown -R ${USER_NAME}:${GROUP_NAME} $WORKDIR/storage $WORKDIR/bootstrap/cache && \
+  chmod -R 775 $WORKDIR/storage $WORKDIR/bootstrap/cache
+
 WORKDIR $WORKDIR
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
