@@ -1,17 +1,24 @@
+import { createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
 import "./assets/styles/styles.css";
+import InnerApp from "./App.tsx";
 import reportWebVitals from "./reportWebVitals.ts";
+import { AuthProvider } from "./store/Auth.tsx";
 
-// Create a new router instance
-const router = createRouter({
+export const router = createRouter({
   routeTree,
-  context: {},
+  context: {
+    auth: {
+      isAuthenticated: false,
+      user: null,
+      role: "public",
+    },
+  },
   defaultPreload: "intent",
   scrollRestoration: true,
   defaultStructuralSharing: true,
@@ -31,8 +38,10 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>
+      <AuthProvider>
+        <InnerApp />
+      </AuthProvider>
+    </StrictMode>,
   );
 }
 

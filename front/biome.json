@@ -7,12 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["src/routeTree.gen.ts"],
+    "ignore": ["src/routeTree.gen.ts", "node_modules/*"],
     "include": ["src/*", ".vscode/*", "index.html", "vite.config.js"]
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "tab"
+    "indentStyle": "space",
+    "indentWidth": 2
   },
   "organizeImports": {
     "enabled": true
