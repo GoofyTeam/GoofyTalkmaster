@@ -66,6 +66,20 @@ if ! grep -q "APP_KEY" "$WEB_ROOT/.env"; then
   info "Generated application key"
 fi
 
+# APP_KEY can be empty
+if grep -q "APP_KEY=" "$WEB_ROOT/.env"; then
+  APP_KEY=$(grep "APP_KEY=" "$WEB_ROOT/.env" | cut -d '=' -f2)
+  if [[ -z "$APP_KEY" ]]; then
+    php "$WEB_ROOT/artisan" key:generate
+    info "Generated application key"
+  else
+    info "APP_KEY is already set in .env"
+  fi
+else
+  php "$WEB_ROOT/artisan" key:generate
+  info "Generated application key"
+fi
+
 # NPM installation
 if [[ -f "$WEB_ROOT/package.json" ]]; then
   if command_exists npm; then
