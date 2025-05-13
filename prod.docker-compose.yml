@@ -4,10 +4,15 @@ services:
     build:
       context: .
       dockerfile: docker/front.Dockerfile
-    ports:
-      - "${FORWARD_FRONT_PORT:-80}:80"
+    #ports:
+    #  - "${FORWARD_FRONT_PORT:-80}:80"
     networks:
       - talkmaster
+      - hosted
+    depends_on:
+      - back-talkmaster
+      - postgres-talkmaster
+      - redis-talkmaster
   back-talkmaster:
     container_name: "back-talkmaster"
     user: www-data
@@ -18,7 +23,6 @@ services:
       IGNITION_LOCAL_SITES_PATH: "${PWD:-/var/www/html}"
     volumes:
       - "./back/:/var/www/html"
-      - laravel-storage:/var/www/html/storage
     networks:
       - talkmaster
     depends_on:
@@ -27,8 +31,8 @@ services:
   postgres-talkmaster:
     image: "postgres:15"
     container_name: postgres-talkmaster
-    ports:
-      - "${FORWARD_DB_PORT:-5432}:5432"
+    #ports:
+    #  - "${FORWARD_DB_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: "${DB_USERNAME:-talkmaster}"
       POSTGRES_PASSWORD: "${DB_PASSWORD:-password}"
@@ -44,8 +48,8 @@ services:
   redis-talkmaster:
     container_name: "redis-talkmaster"
     image: "redis:alpine"
-    ports:
-      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    #ports:
+    #  - "${FORWARD_REDIS_PORT:-6379}:6379"
     volumes:
       - "redis-talkmaster:/data"
     networks:
@@ -57,29 +61,13 @@ services:
         - ping
       retries: 3
       timeout: 5s
-  mailpit-talkmaster:
-    container_name: "mailpit-talkmaster"
-    image: axllent/mailpit
-    volumes:
-      - mailpit-talkmaster:/data
-    networks:
-      - talkmaster
-    ports:
-      - 8025:8025
-      - 1025:1025
-    environment:
-      MP_MAX_MESSAGES: 5000
-      MP_DATA_FILE: /data/mailpit.db
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-
   nginx-talkmaster:
     image: nginx:stable-alpine
     container_name: nginx-talkmaster
     depends_on:
       - back-talkmaster
-    ports:
-      - "8080:8080"
+    #ports:
+    ##  - "8080:8080"
     volumes:
       - ./docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
       - ./back:/var/www/html:ro
@@ -89,13 +77,11 @@ services:
 networks:
   talkmaster:
     driver: bridge
+  hosted:
+    external: true
 
 volumes:
   postgres-talkmaster:
     driver: local
   redis-talkmaster:
-    driver: local
-  mailpit-talkmaster:
-    driver: local
-  laravel-storage:
     driver: local
