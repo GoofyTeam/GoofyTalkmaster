@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/api', function () {
     return response()->json([
         'version' => '1.0.0',
         'name' => 'Laravel API',

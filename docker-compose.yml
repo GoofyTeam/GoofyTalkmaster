@@ -1,4 +1,13 @@
 services:
+  front-talkmaster:
+    container_name: "front-talkmaster"
+    build:
+      context: .
+      dockerfile: docker/front.Dockerfile
+    ports:
+      - "${FORWARD_FRONT_PORT:-80}:80"
+    networks:
+      - talkmaster
   back-talkmaster:
     container_name: "back-talkmaster"
     user: www-data
@@ -72,7 +81,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
       - ./back:/var/www/html:ro
     networks:
       - talkmaster
