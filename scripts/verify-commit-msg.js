@@ -32,7 +32,7 @@ try {
   const message = fs.readFileSync(msgPath, "utf8").trim();
 
   const commitRegex =
-    /^\[TLKMSTR-\d+\]\s+(feat|fix|chore)\((front|back)\):\s.+$/;
+    /^\[TLKMSTR-\d+\]\s+(feat|fix|chore|ci)\((front|back|global)\):\s.+$/;
 
   if (!commitRegex.test(message)) {
     console.error(
