@@ -39,22 +39,22 @@ class User extends Authenticatable
         ];
     }
 
-    protected function isPublic(): bool
+    public function isPublic(): bool
     {
         return $this->role === 'public';
     }
 
-    protected function isSuperAdmin(): bool
+    public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
     }
 
-    protected function isSpeaker(): bool
+    public function isSpeaker(): bool
     {
         return $this->role === 'speaker';
     }
 
-    protected function isOrganizer(): bool
+    public function isOrganizer(): bool
     {
         return $this->role === 'organizer';
     }
