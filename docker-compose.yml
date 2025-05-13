@@ -8,7 +8,7 @@ services:
     environment:
       IGNITION_LOCAL_SITES_PATH: "${PWD:-/var/www/html}"
     volumes:
-      - "./back/:/var/www/html:delegated"
+      - "./back/:/var/www/html"
       - laravel-storage:/var/www/html/storage
     networks:
       - talkmaster
