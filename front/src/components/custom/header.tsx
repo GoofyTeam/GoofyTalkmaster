@@ -8,14 +8,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 interface HeaderProps {
   className?: string;
 }
 
 export const Header = ({ className }: HeaderProps) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, role } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate({ to: "/app" });
+  };
 
   return (
     <header
@@ -51,11 +57,43 @@ export const Header = ({ className }: HeaderProps) => {
                     Profil
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/favoris" className="cursor-pointer w-full">
                     Favoris
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {role === "public" ? (
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/request-speaker"
+                      className="cursor-pointer w-full"
+                    >
+                      Devenir conférencier
+                    </Link>
+                  </DropdownMenuItem>
+                ) : role === "speaker" ||
+                  role === "organizer" ||
+                  role === "superadmin" ? (
+                  <DropdownMenuItem asChild>
+                    <Link to="/manage" className="cursor-pointer w-full">
+                      Espace conférencier
+                    </Link>
+                  </DropdownMenuItem>
+                ) : null}
+                {role === "organizer" || role === "superadmin" ? (
+                  <DropdownMenuItem asChild>
+                    <Link to="/manage/admin" className="cursor-pointer w-full">
+                      Espace gestionnaire
+                    </Link>
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer"
+                >
+                  Se déconnecter
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
