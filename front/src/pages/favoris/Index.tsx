@@ -1,4 +1,3 @@
-import { useAuth } from "@/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
