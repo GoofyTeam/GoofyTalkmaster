@@ -10,9 +10,10 @@
     "test": "vitest run",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check --fix --unsafe"
   },
   "dependencies": {
+    "@dr.pogodin/react-helmet": "^3.0.2",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.13",
     "@radix-ui/react-avatar": "^1.1.9",
