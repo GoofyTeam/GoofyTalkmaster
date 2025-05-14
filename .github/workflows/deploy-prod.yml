@@ -18,6 +18,7 @@ jobs:
       - name: Get ENV
         run: |
           echo "${{ secrets.BACKEND_ENV }}" > ./back/.env
+          echo "${{ secrets.FRONTEND_ENV }}" > ./front/.env
       - name: Build the compose
         run: |
           docker compose -f prod.docker-compose.yml build --no-cache
