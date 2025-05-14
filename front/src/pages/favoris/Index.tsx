@@ -10,12 +10,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 
 function FavorisPage() {
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
-
-  if (loading) {
-    return <div className="container mx-auto py-8">Chargement...</div>;
-  }
 
   return (
     <div className="container mx-auto py-8">
