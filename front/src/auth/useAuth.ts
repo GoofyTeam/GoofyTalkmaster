@@ -1,13 +1,14 @@
-import type { AuthState } from "@/lib/types";
+import type { AuthState, User } from "@/lib/types";
 import { createContext, useContext } from "react";
 
-interface AuthContextType extends AuthState {
+export interface AuthContextType extends AuthState {
   loading: boolean;
   logout: () => Promise<void>;
+  fetchUser: () => Promise<User | null>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const useAuth = () => {

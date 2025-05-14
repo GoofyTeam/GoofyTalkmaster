@@ -17,6 +17,11 @@ export const router = createRouter({
       isAuthenticated: false,
       user: null,
       role: "public",
+      loading: true,
+      fetchUser: async () => {
+        return null;
+      },
+      logout: async () => {},
     },
   },
   defaultPreload: "intent",
