@@ -1,8 +1,7 @@
 import type { User } from "@/lib/types";
+import { API_BASE_URL } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "./useAuth";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);

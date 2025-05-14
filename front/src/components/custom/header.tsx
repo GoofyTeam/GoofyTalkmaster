@@ -8,20 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 interface HeaderProps {
   className?: string;
 }
 
 export const Header = ({ className }: HeaderProps) => {
-  const { user, logout, isAuthenticated, role } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate({ to: "/app" });
-  };
+  const { user, isAuthenticated, role } = useAuth();
 
   return (
     <header
@@ -88,13 +82,6 @@ export const Header = ({ className }: HeaderProps) => {
                     </Link>
                   </DropdownMenuItem>
                 ) : null}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="cursor-pointer"
-                >
-                  Se déconnecter
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
