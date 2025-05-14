@@ -1,6 +1,6 @@
 import { RouterProvider } from "@tanstack/react-router";
-import { router } from "./main";
 import { useAuth } from "./auth/useAuth";
+import { router } from "./main";
 
 function InnerApp() {
   const auth = useAuth();

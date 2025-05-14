@@ -1,4 +1,4 @@
-import type { AuthState } from "@/lib/types";
+import type { AuthContextType } from "@/auth/useAuth";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import {
   Outlet,
@@ -8,15 +8,20 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 interface TalkmasterContext {
-  auth: AuthState;
+  auth: AuthContextType;
 }
 
 export const Route = createRootRouteWithContext<TalkmasterContext>()({
   beforeLoad: async ({ context, location }) => {
-    const isLoggedIn = context.auth.isAuthenticated;
-    const userRole = context.auth.role;
+    const userData = await context.auth.fetchUser();
+    const isLoggedIn = !!userData;
+    const userRole = userData?.role || "public";
     const isAuthPage = location.pathname.startsWith("/auth");
     const isManagePage = location.pathname.startsWith("/manage");
+
+    console.log("isLoggedIn", isLoggedIn);
+    console.log("userRole", userRole);
+    console.log("userData", userData);
 
     if (isLoggedIn && isAuthPage) {
       redirect({

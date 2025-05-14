@@ -2,6 +2,8 @@ name: Laravel CI
 
 on:
   pull_request:
+    paths:
+      - "back/**"
   workflow_dispatch:
 
 jobs:
