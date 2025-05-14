@@ -7,8 +7,8 @@ import { routeTree } from "./routeTree.gen";
 
 import "./assets/styles/styles.css";
 import InnerApp from "./App.tsx";
+import { AuthProvider } from "./auth/context.tsx";
 import reportWebVitals from "./reportWebVitals.ts";
-import { AuthProvider } from "./store/Auth.tsx";
 
 export const router = createRouter({
   routeTree,
