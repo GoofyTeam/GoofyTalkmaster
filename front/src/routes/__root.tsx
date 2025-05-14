@@ -19,23 +19,19 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
     const userRole = userData?.role || "public";
     const isAuthPage = location.pathname.startsWith("/auth");
     const isManagePage = location.pathname.startsWith("/manage");
-    // const isRootPage = location.pathname === "/";
 
     console.log("isLoggedIn", isLoggedIn);
     console.log("userRole", userRole);
     console.log("userData", userData);
 
-    // 🔐 Si utilisateur NON connecté et PAS sur /auth → rediriger vers login
     if (!isLoggedIn && !isAuthPage) {
       throw redirect({ to: "/auth/login" });
     }
 
-    // 🙅‍♂️ Si connecté et essaie d'accéder à /auth/* → rediriger vers /app
     if (isLoggedIn && isAuthPage) {
       throw redirect({ to: "/app" });
     }
 
-    // 🔒 Si connecté mais rôle "public" et essaie d'accéder à /manage → rediriger vers /app
     if (isLoggedIn && userRole === "public" && isManagePage) {
       throw redirect({ to: "/app" });
     }
