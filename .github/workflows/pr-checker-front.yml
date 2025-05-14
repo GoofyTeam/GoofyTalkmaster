@@ -1,0 +1,37 @@
+name: PR Checker Frontend
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pr-checker:
+    name: PR Checker Frontend
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Install dependencies
+        working-directory: ./front
+        run: |
+          npm ci
+          echo "Dependencies installed"
+      - name: run biome
+        working-directory: ./front
+        run: |
+          npx biome ci
+          echo "Biome ci completed"
+      - name: run tests
+        working-directory: ./front
+        run: |
+          npm run test
+          echo "Tests completed"
