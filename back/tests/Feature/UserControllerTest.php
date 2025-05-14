@@ -191,4 +191,158 @@ class UserControllerTest extends TestCase
 
         $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
+
+    public function test_promote_public_to_speaker_as_superadmin()
+    {
+        $superAdmin = User::factory()->create(['role' => 'superadmin']);
+        $publicUser = User::factory()->create(['role' => 'public']);
+
+        $response = $this->actingAs($superAdmin)
+            ->patchJson("/api/users/{$publicUser->id}/promote-to-speaker");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'User promoted to speaker successfully',
+                'user' => ['role' => 'speaker'],
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $publicUser->id,
+            'role' => 'speaker',
+        ]);
+    }
+
+    public function test_promote_public_to_speaker_as_organizer()
+    {
+        $organizer = User::factory()->create(['role' => 'organizer']);
+        $publicUser = User::factory()->create(['role' => 'public']);
+
+        $response = $this->actingAs($organizer)
+            ->patchJson("/api/users/{$publicUser->id}/promote-to-speaker");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'User promoted to speaker successfully',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $publicUser->id,
+            'role' => 'speaker',
+        ]);
+    }
+
+    public function test_promote_fails_if_user_not_public()
+    {
+        $superAdmin = User::factory()->create(['role' => 'superadmin']);
+        $speakerUser = User::factory()->create(['role' => 'speaker']);
+
+        $response = $this->actingAs($superAdmin)
+            ->patchJson("/api/users/{$speakerUser->id}/promote-to-speaker");
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'message' => 'Only public users can be promoted to speaker',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $speakerUser->id,
+            'role' => 'speaker',
+        ]);
+    }
+
+    public function test_promote_fails_for_unauthorized_user()
+    {
+        $speaker = User::factory()->create(['role' => 'speaker']);
+        $publicUser = User::factory()->create(['role' => 'public']);
+
+        $response = $this->actingAs($speaker)
+            ->patchJson("/api/users/{$publicUser->id}/promote-to-speaker");
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'message' => 'Unauthorized',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $publicUser->id,
+            'role' => 'public',
+        ]);
+    }
+
+    public function test_demote_speaker_to_public_as_superadmin()
+    {
+        $superAdmin = User::factory()->create(['role' => 'superadmin']);
+        $speakerUser = User::factory()->create(['role' => 'speaker']);
+
+        $response = $this->actingAs($superAdmin)
+            ->patchJson("/api/users/{$speakerUser->id}/demote-to-public");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'User demoted to public successfully',
+                'user' => ['role' => 'public'],
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $speakerUser->id,
+            'role' => 'public',
+        ]);
+    }
+
+    public function test_demote_speaker_to_public_as_organizer()
+    {
+        $organizer = User::factory()->create(['role' => 'organizer']);
+        $speakerUser = User::factory()->create(['role' => 'speaker']);
+
+        $response = $this->actingAs($organizer)
+            ->patchJson("/api/users/{$speakerUser->id}/demote-to-public");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'User demoted to public successfully',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $speakerUser->id,
+            'role' => 'public',
+        ]);
+    }
+
+    public function test_demote_fails_if_user_not_speaker()
+    {
+        $superAdmin = User::factory()->create(['role' => 'superadmin']);
+        $publicUser = User::factory()->create(['role' => 'public']);
+
+        $response = $this->actingAs($superAdmin)
+            ->patchJson("/api/users/{$publicUser->id}/demote-to-public");
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'message' => 'Only speakers can be demoted to public',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $publicUser->id,
+            'role' => 'public',
+        ]);
+    }
+
+    public function test_demote_fails_for_unauthorized_user()
+    {
+        $speaker = User::factory()->create(['role' => 'speaker']);
+        $otherSpeaker = User::factory()->create(['role' => 'speaker']);
+
+        $response = $this->actingAs($speaker)
+            ->patchJson("/api/users/{$otherSpeaker->id}/demote-to-public");
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'message' => 'Unauthorized',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $otherSpeaker->id,
+            'role' => 'speaker',
+        ]);
+    }
 }
