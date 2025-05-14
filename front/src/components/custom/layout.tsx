@@ -1,4 +1,4 @@
-import { Header } from "@/components/custom/Header";
+import { Header } from "@/components/custom/header";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 

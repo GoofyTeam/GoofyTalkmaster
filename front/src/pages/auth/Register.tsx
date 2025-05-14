@@ -32,13 +32,13 @@ function Register() {
             Accept: "application/json",
           },
           credentials: "include",
-        }
+        },
       );
 
       if (!csrfResponse.ok) {
         const errorData = await csrfResponse.json();
         throw new Error(
-          errorData.message || "Erreur lors de la récupération du CSRF token"
+          errorData.message || "Erreur lors de la récupération du CSRF token",
         );
       }
 
