@@ -58,4 +58,25 @@ class User extends Authenticatable
     {
         return $this->role === 'organizer';
     }
+
+    public function talks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Talk::class, 'speaker_id');
+    }
+
+    /**
+     * Get the favorites of this user.
+     */
+    public function favorites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Get the talks favorited by this user.
+     */
+    public function favoriteTalks()
+    {
+        return $this->belongsToMany(Talk::class, 'favorites', 'user_id', 'talk_id')->withTimestamps();
+    }
 }
