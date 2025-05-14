@@ -25,10 +25,52 @@ class UserController extends Controller
         Validator::make($request->all(), [
             'per_page' => 'integer|min:1|max:100',
             'page' => 'integer|min:1',
+            'name' => 'sometimes|string',
+            'first_name' => 'sometimes|string',
+            'email' => 'sometimes|string|email',
+            'role' => 'sometimes|in:superadmin,organizer,speaker,public',
+            'search' => 'sometimes|string',
+            'sort_by' => 'sometimes|in:name,first_name,email,role,created_at',
+            'sort_direction' => 'sometimes|in:asc,desc',
         ])->validate();
 
+        $query = User::query();
+
+        // Filtres
+        if ($request->has('name')) {
+            $query->where('name', 'like', '%'.$request->input('name').'%');
+        }
+
+        if ($request->has('first_name')) {
+            $query->where('first_name', 'like', '%'.$request->input('first_name').'%');
+        }
+
+        if ($request->has('email')) {
+            $query->where('email', 'like', '%'.$request->input('email').'%');
+        }
+
+        if ($request->has('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        // Recherche globale
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
+
+        // Tri
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $query->orderBy($sortBy, $sortDirection);
+
         return response()->json([
-            'users' => User::paginate($request->input('per_page', 15)),
+            'users' => $query->paginate($request->input('per_page', 15)),
         ]);
     }
 
@@ -185,6 +227,68 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User deleted successfully',
+        ]);
+    }
+
+    /**
+     * Promote a user from public to speaker role.
+     */
+    public function promoteToSpeaker(Request $request, User $user)
+    {
+        $authUser = $request->user();
+
+        // Vérifier les permissions
+        if (! ($authUser->isSuperadmin() || $authUser->isOrganizer())) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        // Vérifier que l'utilisateur est bien au rôle "public"
+        if (! $user->isPublic()) {
+            return response()->json([
+                'message' => 'Only public users can be promoted to speaker',
+            ], 400);
+        }
+
+        // Promouvoir l'utilisateur
+        $user->role = 'speaker';
+        $user->save();
+
+        return response()->json([
+            'message' => 'User promoted to speaker successfully',
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Demote a user from speaker to public role.
+     */
+    public function demoteToPublic(Request $request, User $user)
+    {
+        $authUser = $request->user();
+
+        // Vérifier les permissions
+        if (! ($authUser->isSuperadmin() || $authUser->isOrganizer())) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        // Vérifier que l'utilisateur est bien au rôle "speaker"
+        if (! $user->isSpeaker()) {
+            return response()->json([
+                'message' => 'Only speakers can be demoted to public',
+            ], 400);
+        }
+
+        // Rétrograder l'utilisateur
+        $user->role = 'public';
+        $user->save();
+
+        return response()->json([
+            'message' => 'User demoted to public successfully',
+            'user' => $user,
         ]);
     }
 }
