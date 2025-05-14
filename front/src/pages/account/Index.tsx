@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/useAuth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +31,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/store/Auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
