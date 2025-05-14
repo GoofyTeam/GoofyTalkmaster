@@ -1,4 +1,5 @@
 import type { AuthContextType } from "@/auth/useAuth";
+import { MainLayout } from "@/components/custom/layout";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import {
   Outlet,
@@ -79,7 +80,9 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
           content="https://talkmaster.stroyco.eu/logo.png"
         />
       </HelmetProvider>
-      <Outlet />
+      <MainLayout>
+        <Outlet />
+      </MainLayout>
       <TanStackRouterDevtools />
     </>
   ),

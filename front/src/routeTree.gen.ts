@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as ManageIndexImport } from './routes/manage/index'
+import { Route as FavorisIndexImport } from './routes/favoris/index'
 import { Route as AppIndexImport } from './routes/app/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as AuthRegisterImport } from './routes/auth/register'
@@ -30,6 +31,12 @@ const IndexRoute = IndexImport.update({
 const ManageIndexRoute = ManageIndexImport.update({
   id: '/manage/',
   path: '/manage/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FavorisIndexRoute = FavorisIndexImport.update({
+  id: '/favoris/',
+  path: '/favoris/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -109,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexImport
       parentRoute: typeof rootRoute
     }
+    '/favoris/': {
+      id: '/favoris/'
+      path: '/favoris'
+      fullPath: '/favoris'
+      preLoaderRoute: typeof FavorisIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/manage/': {
       id: '/manage/'
       path: '/manage'
@@ -128,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
+  '/favoris': typeof FavorisIndexRoute
   '/manage': typeof ManageIndexRoute
 }
 
@@ -138,6 +153,7 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
+  '/favoris': typeof FavorisIndexRoute
   '/manage': typeof ManageIndexRoute
 }
 
@@ -149,6 +165,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/account/': typeof AccountIndexRoute
   '/app/': typeof AppIndexRoute
+  '/favoris/': typeof FavorisIndexRoute
   '/manage/': typeof ManageIndexRoute
 }
 
@@ -161,6 +178,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/account'
     | '/app'
+    | '/favoris'
     | '/manage'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,6 +188,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/account'
     | '/app'
+    | '/favoris'
     | '/manage'
   id:
     | '__root__'
@@ -179,6 +198,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/account/'
     | '/app/'
+    | '/favoris/'
     | '/manage/'
   fileRoutesById: FileRoutesById
 }
@@ -190,6 +210,7 @@ export interface RootRouteChildren {
   AuthRegisterRoute: typeof AuthRegisterRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AppIndexRoute: typeof AppIndexRoute
+  FavorisIndexRoute: typeof FavorisIndexRoute
   ManageIndexRoute: typeof ManageIndexRoute
 }
 
@@ -200,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRegisterRoute: AuthRegisterRoute,
   AccountIndexRoute: AccountIndexRoute,
   AppIndexRoute: AppIndexRoute,
+  FavorisIndexRoute: FavorisIndexRoute,
   ManageIndexRoute: ManageIndexRoute,
 }
 
@@ -219,6 +241,7 @@ export const routeTree = rootRoute
         "/auth/register",
         "/account/",
         "/app/",
+        "/favoris/",
         "/manage/"
       ]
     },
@@ -239,6 +262,9 @@ export const routeTree = rootRoute
     },
     "/app/": {
       "filePath": "app/index.tsx"
+    },
+    "/favoris/": {
+      "filePath": "favoris/index.tsx"
     },
     "/manage/": {
       "filePath": "manage/index.tsx"
