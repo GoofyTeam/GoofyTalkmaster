@@ -8,25 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
 
 function FavorisPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Rediriger si l'utilisateur n'est pas connecté
-  useEffect(() => {
-    if (!user && !loading) {
-      navigate({ to: "/auth/login" });
-    }
-  }, [user, loading, navigate]);
-
   if (loading) {
     return <div className="container mx-auto py-8">Chargement...</div>;
-  }
-
-  if (!user) {
-    return <div className="container mx-auto py-8">Redirection...</div>;
   }
 
   return (

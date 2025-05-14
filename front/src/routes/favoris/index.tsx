@@ -1,9 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import FavorisPage from "@/pages/favoris/Index";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/favoris/")({
-  component: RouteComponent,
+  beforeLoad: async ({ context }) => {
+    const userData = await context.auth.fetchUser();
+    if (!userData) {
+      throw redirect({
+        to: "/auth/login",
+        replace: true,
+      });
+    }
+    return { userData };
+  },
+  component: FavorisPage,
 });
-
-function RouteComponent() {
-  return <div>Hello "/favoris/"!</div>;
-}
