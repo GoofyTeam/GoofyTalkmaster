@@ -44,3 +44,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Route publique pour voir les talks programmés
 Route::get('/public/talks', [TalkController::class, 'publicIndex']);
+
+Route::apiResource('rooms', \App\Http\Controllers\RoomController::class)
+    ->middleware('auth:sanctum');
