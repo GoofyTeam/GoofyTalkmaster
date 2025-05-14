@@ -36,6 +36,7 @@ jobs:
           npm run test
           echo "Tests completed"
       - name: run build
+        working-directory: ./front
         run: |
           npm run build
           echo "Build completed"
