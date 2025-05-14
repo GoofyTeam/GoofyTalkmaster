@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SpeakersRequestController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,4 +16,7 @@ Route::patch('/users/{user}/promote-to-speaker', [UserController::class, 'promot
     ->middleware('auth:sanctum');
 
 Route::patch('/users/{user}/demote-to-public', [UserController::class, 'demoteToPublic'])
+    ->middleware('auth:sanctum');
+
+Route::apiResource('speakers-request', SpeakersRequestController::class)
     ->middleware('auth:sanctum');
