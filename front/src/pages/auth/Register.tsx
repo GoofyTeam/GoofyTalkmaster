@@ -1,7 +1,16 @@
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/utils";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 function Register() {
@@ -85,71 +94,93 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
-        <h1 className="text-2xl font-bold text-center">Page d'inscription</h1>
-        <form className="space-y-4" onSubmit={handleRegister}>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">Nom</p>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Entrez votre nom"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">Prénom</p>
-            <Input
-              id="first_name"
-              type="text"
-              placeholder="Entrez votre prénom"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-          </div>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">
-              Adresse Mail
-            </p>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Entrez votre adresse mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">
-              Mot de passe
-            </p>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Entrez votre mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">
-              Confirmez Mot de passe
-            </p>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirmer votre mot de passe"
-              value={password_confirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          <Button type="submit" className="w-full">
-            S'inscrire
-          </Button>
-        </form>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <Card>
+          <CardHeader>
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-sm hover:underline"
+            >
+              <ArrowLeft size={16} /> Retour à l'accueil
+            </Link>
+            <CardTitle className="text-2xl">Inscrivez-vous</CardTitle>
+            <CardDescription>Rejoignez-nos talks !</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleRegister}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nom</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Entrez votre nom"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="first_name">Prénom</Label>
+                  <Input
+                    id="first_name"
+                    type="text"
+                    placeholder="Entrez votre prénom"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Entrez votre adresse mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Mot de passe</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Entrez votre mot de passe"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">
+                    Confirmez le mot de passe
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirmer votre mot de passe"
+                    value={password_confirmation}
+                    onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
+                <Button type="submit" className="w-full">
+                  S'inscrire
+                </Button>
+              </div>
+              <div className="text-center">
+                <Link
+                  to="/auth/login"
+                  className="text-sm underline cursor-pointer"
+                >
+                  Vous avez déjà un compte ?
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
