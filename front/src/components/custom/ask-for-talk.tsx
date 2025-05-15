@@ -48,7 +48,7 @@ const AskNewTalk = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof askTalkSchema>) => {
-    console.log(values);
+    toast("Envoi de votre proposition de talk en cours...");
     await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
       credentials: "include",
     });

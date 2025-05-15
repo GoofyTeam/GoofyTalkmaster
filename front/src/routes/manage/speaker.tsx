@@ -1,4 +1,6 @@
+import type { Talk } from "@/components/TalkCard";
 import { API_BASE_URL } from "@/lib/utils";
+import NotFoundPage from "@/pages/NotFound";
 import Speaker from "@/pages/manage/Speaker";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
@@ -32,7 +34,11 @@ export const Route = createFileRoute("/manage/speaker")({
     return {
       talks: talksData.data,
       numberOfTalks: talksData.total,
+      onlyAcceptedTalks: talksData.data.filter(
+        (talk: Talk) => talk.status === "accepted",
+      ),
     };
   },
   component: Speaker,
+  notFoundComponent: NotFoundPage,
 });

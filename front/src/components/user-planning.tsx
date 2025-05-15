@@ -1,5 +1,10 @@
 import moment from "moment";
-import { Calendar, Views, momentLocalizer } from "react-big-calendar";
+import {
+  Calendar,
+  type Event,
+  Views,
+  momentLocalizer,
+} from "react-big-calendar";
 
 import {
   Card,
@@ -11,6 +16,15 @@ import {
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { cn } from "@/lib/utils";
+import type { Talk } from "./TalkCard";
+
+export function eventMapper(event: Talk): Event {
+  return {
+    title: `${event.title} - ${event.speaker.id}`,
+    start: new Date(event.startTime || ""),
+    end: new Date(event.startTime || ""),
+  };
+}
 
 function CustomToolbar({ label = "Votre planning" }) {
   return (
@@ -27,28 +41,12 @@ function CustomToolbar({ label = "Votre planning" }) {
 }
 
 const minTime = new Date();
-minTime.setHours(9, 0, 0); // Affiche à partir de 08:00
+minTime.setHours(9, 0, 0);
 const maxTime = new Date();
-maxTime.setHours(19, 0, 0); // Jusqu’à 17:00
+maxTime.setHours(19, 0, 0);
 
-const UserPlanning = () => {
+const UserPlanning = ({ talks }: { talks: Talk[] }) => {
   const localizer = momentLocalizer(moment);
-
-  const events = [
-    {
-      //Start the 15 may 2025 at 10AM and end at 6PM
-      start: new Date(2025, 4, 15, 10, 0, 0),
-      end: new Date(2025, 4, 15, 18, 0, 0),
-      title: "Conférence d'ouverture",
-    },
-    {
-      // Start the 16 may 2025 at 10AM and end at 6PM
-      start: new Date(2025, 4, 16, 10, 0, 0),
-      end: new Date(2025, 4, 16, 18, 0, 0),
-      title: "Atelier de développement",
-    },
-    // Add more events as needed
-  ];
 
   return (
     <Card className="w-full">
@@ -62,7 +60,7 @@ const UserPlanning = () => {
       <CardContent className="">
         <Calendar
           localizer={localizer}
-          events={events}
+          events={talks.map(eventMapper)}
           startAccessor="start"
           endAccessor="end"
           min={minTime}

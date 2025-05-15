@@ -29,7 +29,7 @@ const TalksList = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Vos propositions</CardTitle>
-        <CardDescription>Voici la liste de vos propostion.</CardDescription>
+        <CardDescription>Voici la liste de vos propositions.</CardDescription>
       </CardHeader>
       <CardContent>
         <div ref={parentRef} style={{ overflow: "auto", height: "25vh" }}>
@@ -62,10 +62,7 @@ const TalksList = () => {
                       title: talk.title,
                       topic: talk.topic,
                       description: talk.description,
-                      speaker: {
-                        id: talk.speaker_id,
-                        name: talk.speaker_name,
-                      },
+                      speaker: talk.speaker,
                       status: talk.status,
                       scheduledDate: talk.scheduledDate,
                     }}
