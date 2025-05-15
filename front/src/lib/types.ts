@@ -7,10 +7,10 @@ export interface AuthState {
 type UserRole = "public" | "speaker" | "organizer" | "superadmin";
 
 export type User = {
-  id: string;
+  id: string | number;
   role: UserRole;
-  lastname: string;
   firstname: string;
+  lastname: string;
   email: string;
   profile_picture: string;
   description: string;
