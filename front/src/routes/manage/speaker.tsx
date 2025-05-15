@@ -41,4 +41,6 @@ export const Route = createFileRoute("/manage/speaker")({
   },
   component: Speaker,
   notFoundComponent: NotFoundPage,
+  gcTime: 0,
+  shouldReload: false,
 });
