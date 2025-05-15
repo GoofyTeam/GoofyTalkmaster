@@ -2,7 +2,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 
 import { useLoaderData } from "@tanstack/react-router";
 import { useRef } from "react";
-import { TalkCard } from "../TalkCard";
 import {
   Card,
   CardContent,
@@ -10,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { SimpleTalkCard } from "../ui/talk-card";
 
 const TalksList = () => {
   const { talks } = useLoaderData({
@@ -56,7 +56,7 @@ const TalksList = () => {
                     marginTop: "1rem",
                   }}
                 >
-                  <TalkCard
+                  <SimpleTalkCard
                     talk={{
                       id: talk.id,
                       title: talk.title,

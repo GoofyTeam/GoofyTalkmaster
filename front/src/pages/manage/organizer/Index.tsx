@@ -1,10 +1,8 @@
-import { useAuth } from "@/auth/useAuth";
-import type { PendingTalk } from "@/components/Talk";
 import { PendingCards } from "@/components/manage/PendingCards";
 import { API_BASE_URL } from "@/lib/utils";
-import { useNavigate } from "@tanstack/react-router";
+import type { PendingTalk } from "@/types/talk";
+import { useRouter } from "@tanstack/react-router";
 import { useLoaderData } from "@tanstack/react-router";
-import { useEffect } from "react";
 
 type LoaderData = {
   pendingTalks: PendingTalk[];
@@ -19,15 +17,13 @@ type LoaderData = {
 };
 
 export default function OrganizerPage() {
-  const { user, loading, role } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   // Récupérer les données chargées par le router
   const routeData = useLoaderData({
     from: "/manage/organizer",
     structuralSharing: false,
   }) as LoaderData;
-  const isLoading = loading || !routeData;
 
   // Fonction pour valider un talk
   const handleValidateTalk = async (
@@ -76,6 +72,12 @@ export default function OrganizerPage() {
       }
 
       // Puis, programmer la salle et l'horaire
+      if (!room.includes("-")) {
+        throw new Error(
+          `Format de salle invalide: "${room}". Format attendu "date-roomId".`,
+        );
+      }
+
       const [date, roomId] = room.split("-"); // Si room contient l'ID de la salle
       const [startTime] = time.split("-"); // Si time contient l'heure de début
 
@@ -105,8 +107,8 @@ export default function OrganizerPage() {
         );
       }
 
-      // Recharger la page pour actualiser les données
-      navigate({ to: "/manage/organizer", replace: true });
+      // Invalider le cache du router pour recharger les données
+      router.invalidate();
     } catch (error) {
       console.error(`Erreur lors de la validation du talk ${talkId}:`, error);
     }
@@ -153,44 +155,23 @@ export default function OrganizerPage() {
         );
       }
 
-      // Recharger la page pour actualiser les données
-      navigate({ to: "/manage/organizer", replace: true });
+      // Invalider le cache du router pour recharger les données
+      router.invalidate();
     } catch (error) {
       console.error(`Erreur lors du rejet du talk ${talkId}:`, error);
     }
   };
 
-  // Protection de la route - accessible uniquement aux gestionnaires et administrateurs
-  useEffect(() => {
-    if (!loading && role !== "organizer" && role !== "superadmin") {
-      navigate({ to: "/app" });
-    }
-  }, [loading, role, navigate]);
-
-  if (loading) {
-    return <div className="container mx-auto py-8">Chargement...</div>;
-  }
-
-  if (!user) {
-    return <div className="container mx-auto py-8">Redirection...</div>;
-  }
-
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">Espace Gestionnaire</h1>
       <div className="flex gap-4">
-        {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Chargement des demandes...</p>
-          </div>
-        ) : (
-          <PendingCards
-            pendingTalks={routeData.pendingTalks}
-            pagination={routeData.pagination}
-            onValidate={handleValidateTalk}
-            onReject={handleRejectTalk}
-          />
-        )}
+        <PendingCards
+          pendingTalks={routeData.pendingTalks}
+          pagination={routeData.pagination}
+          onValidate={handleValidateTalk}
+          onReject={handleRejectTalk}
+        />
       </div>
     </div>
   );

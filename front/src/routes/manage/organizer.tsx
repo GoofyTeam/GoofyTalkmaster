@@ -1,25 +1,29 @@
-import type { PendingTalk } from "@/components/Talk";
+import { type ApiTalk, mapApiTalkToPendingTalk } from "@/lib/mappers";
 import { API_BASE_URL } from "@/lib/utils";
 import OrganizerPage from "@/pages/manage/organizer/Index";
-import { createFileRoute } from "@tanstack/react-router";
+import type { PendingTalk } from "@/types/talk";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 // Définir le type pour la route
 export const Route = createFileRoute("/manage/organizer")({
-  component: OrganizerPage,
+  // Vérification des permissions avant le chargement
+  beforeLoad: async ({ context }) => {
+    const userData = await context.auth.fetchUser();
+    const isLoggedIn = !!userData;
+    const userRole = userData?.role || "public";
+
+    if (!isLoggedIn) {
+      throw redirect({ to: "/auth/login" });
+    }
+    if (userRole !== "organizer" && userRole !== "superadmin") {
+      throw redirect({ to: "/app" });
+    }
+  },
   // Définir les données à charger
-  loader: async ({ context }) => {
+  loader: async () => {
     // Valeur par défaut
     const pageNumber = 1;
     const itemsPerPage = 12; // Nombre d'éléments par page augmenté pour éviter trop de requêtes
-
-    // Vérifier si l'utilisateur est connecté
-    const userData = await context.auth.fetchUser();
-    if (
-      !userData ||
-      (userData.role !== "organizer" && userData.role !== "superadmin")
-    ) {
-      throw new Error("Unauthorized");
-    }
 
     try {
       // Obtenir un cookie CSRF frais
@@ -33,8 +37,9 @@ export const Route = createFileRoute("/manage/organizer")({
         ?.split("=")[1];
 
       if (!csrfToken) {
-        throw new Error("CSRF token not found");
+        throw new Error("Impossible de récupérer le token CSRF");
       }
+
       const response = await fetch(
         `${API_BASE_URL}/api/talks?status=pending&sort_by=created_at&sort_direction=desc&per_page=50`,
         {
@@ -48,35 +53,33 @@ export const Route = createFileRoute("/manage/organizer")({
         },
       );
 
+      // Si l'utilisateur n'est pas autorisé (401) ou la session a expiré
+      if (response.status === 401) {
+        console.error("Session expirée ou non autorisé");
+        throw redirect({ to: "/auth/login" });
+      }
+
+      // Si la ressource n'est pas trouvée (404)
+      if (response.status === 404) {
+        console.error("Ressource non trouvée");
+        throw notFound();
+      }
+
+      // Pour toute autre erreur
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message ||
-            `Erreur ${response.status}: ${response.statusText}`,
+        console.error(
+          `Erreur ${response.status}: ${response.statusText}`,
+          errorData,
         );
+        throw notFound();
       }
 
       const data = await response.json();
 
       // Transformation des données de l'API au format PendingTalk
-      const pendingTalks: PendingTalk[] = data.data.map(
-        (talk: {
-          id: number;
-          title: string;
-          subject: string;
-          description: string;
-          speaker_id: number;
-          speaker?: { id: number; name: string };
-        }) => ({
-          id: talk.id,
-          title: talk.title,
-          topic: talk.subject,
-          description: talk.description,
-          speaker: {
-            id: talk.speaker_id,
-            name: talk.speaker ? talk.speaker.name : "Inconnu",
-          },
-        }),
+      const pendingTalks: PendingTalk[] = data.data.map((apiTalk: ApiTalk) =>
+        mapApiTalkToPendingTalk(apiTalk),
       );
 
       return {
@@ -91,24 +94,20 @@ export const Route = createFileRoute("/manage/organizer")({
         },
       };
     } catch (error) {
+      // Si c'est déjà une erreur de redirection ou notFound, la laisser se propager
+      if (
+        error instanceof Error &&
+        (error.message.includes("redirect") ||
+          error.message.includes("notFound"))
+      ) {
+        throw error;
+      }
+
+      // Sinon, logger l'erreur et renvoyer vers une page d'erreur
       console.error("Erreur lors du chargement des talks:", error);
-      return {
-        pendingTalks: [],
-        pagination: {
-          currentPage: pageNumber,
-          totalPages: 1,
-          totalItems: 0,
-          hasNextPage: false,
-          hasPreviousPage: false,
-          itemsPerPage,
-        },
-      };
+      throw notFound();
     }
   },
-  // Mettre à jour automatiquement toutes les 5 minutes
-  loaderDeps: () => {
-    return {
-      timestamp: Math.floor(Date.now() / 300000), // Toutes les 5 minutes
-    };
-  },
+  // Composant à afficher
+  component: OrganizerPage,
 });

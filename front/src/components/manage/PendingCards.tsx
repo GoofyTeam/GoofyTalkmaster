@@ -1,12 +1,8 @@
-import {
-  type PendingTalk,
-  type Talk,
-  TalkCard,
-  TalkValidationDialog,
-  convertToPendingTalk,
-  convertToTalk,
-} from "@/components/Talk";
 import { Button } from "@/components/ui/button";
+import { SimpleTalkCard } from "@/components/ui/talk-card";
+import { TalkValidationDialog } from "@/components/ui/talk-validation-dialog";
+import { convertToPendingTalk, convertToTalk } from "@/lib/talk-utils";
+import type { PendingTalk, Talk } from "@/types/talk";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type PendingCardsProps = {
@@ -130,7 +126,7 @@ export function PendingCards({
           >
             {visibleTalks.map((pendingTalk) => (
               <div key={pendingTalk.id}>
-                <TalkCard
+                <SimpleTalkCard
                   talk={convertToTalk(pendingTalk)}
                   onClick={handleCardClick}
                   showStatus={true}
@@ -159,6 +155,7 @@ export function PendingCards({
 
       {/* Dialogue de validation des talks */}
       <TalkValidationDialog
+        key={selectedTalk?.id || "empty"}
         talk={selectedTalk}
         open={dialogOpen}
         onOpenChange={setDialogOpen}

@@ -1,9 +1,8 @@
-import { getStatusClass, getStatusLabel } from "@/lib/talk-utils";
 import type { Talk } from "@/types/talk";
 import type { KeyboardEvent } from "react";
 
-// Props pour le composant TalkCard
-type TalkCardProps = {
+// Props pour le composant SimpleTalkCard
+type SimpleTalkCardProps = {
   talk: Talk;
   onClick?: (talk: Talk) => void;
   showStatus?: boolean;
@@ -11,14 +10,40 @@ type TalkCardProps = {
   className?: string;
 };
 
-// Composant TalkCard
-export function TalkCard({
+// Fonctions utilitaires pour l'affichage
+const getStatusLabel = (status: string | undefined) => {
+  switch (status) {
+    case "pending":
+      return "En attente";
+    case "accepted":
+      return "Accepté";
+    case "rejected":
+      return "Refusé";
+    default:
+      return "";
+  }
+};
+
+const getStatusClass = (status: string | undefined) => {
+  switch (status) {
+    case "pending":
+      return "bg-yellow-500 text-yellow-50";
+    case "accepted":
+      return "bg-green-500 text-green-50";
+    case "rejected":
+      return "bg-red-500 text-red-50";
+    default:
+      return "bg-primary text-primary-foreground";
+  }
+};
+
+export function SimpleTalkCard({
   talk,
   onClick,
   showStatus = false,
   showSchedule = false,
   className = "",
-}: TalkCardProps) {
+}: SimpleTalkCardProps) {
   const handleClick = () => {
     if (onClick) {
       onClick(talk);
