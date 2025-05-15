@@ -43,6 +43,7 @@ export default function Homepage() {
       params.set("sort_by", "scheduled_date");
       params.set("sort_direction", "asc");
 
+      console.log("🚀 fetching /api/public/talks?", params.toString());
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
         { headers: { Accept: "application/json" } }
@@ -50,8 +51,11 @@ export default function Homepage() {
       if (!res.ok) throw new Error("Erreur fetching talks");
 
       const payload = await res.json();
+      console.log("🚀 raw API payload:", payload);
 
       let data = (payload.data ?? payload) as any[];
+
+      console.log("🚀 data before filtering:", data);
 
       if (fSearch) {
         const q = fSearch.toLowerCase();
@@ -80,6 +84,8 @@ export default function Homepage() {
       if (fStatus) {
         data = data.filter((t) => t.status === fStatus);
       }
+
+      console.log("🚀 data after filtering:", data);
 
       const talksList: Talk[] = data.map((t) => ({
         ...t,
