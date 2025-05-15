@@ -31,15 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/talks/{id}', [TalkController::class, 'update']);
     Route::delete('/talks/{id}', [TalkController::class, 'destroy']);
 
-    // Routes pour les organizers
-    Route::patch('/talks/{id}/status', [TalkController::class, 'updateStatus']);
-    Route::patch('/talks/{id}/schedule', [TalkController::class, 'schedule']);
-
     // Routes pour les favoris
     Route::get('/user/favorites', [FavoriteController::class, 'index']);
 
     Route::post('/talks/{id}/favorite', [FavoriteController::class, 'store']);
     Route::delete('/talks/{id}/favorite', [FavoriteController::class, 'destroy']);
+
+    Route::put('talks/{id}/status', [TalkController::class, 'updateStatus']);
 });
 
 // Route publique pour voir les talks programmés

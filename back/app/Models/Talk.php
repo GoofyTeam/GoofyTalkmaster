@@ -20,12 +20,12 @@ class Talk extends Model
         'title',
         'subject',
         'description',
-        'duration_minutes',
         'level',
         'status',
         'speaker_id',
         'scheduled_date',
         'start_time',
+        'end_time',
         'room_id',
     ];
 

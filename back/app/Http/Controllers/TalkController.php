@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
 use App\Models\Talk;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -66,7 +65,6 @@ class TalkController extends Controller
             'title' => 'required|string|max:255',
             'subject' => 'required|string|max:100',
             'description' => 'required|string',
-            'duration_minutes' => 'required|integer|min:15|max:180',
             'level' => 'required|in:beginner,intermediate,advanced',
         ])->validate();
 
@@ -74,7 +72,6 @@ class TalkController extends Controller
         $talk->title = $request->input('title');
         $talk->subject = $request->input('subject');
         $talk->description = $request->input('description');
-        $talk->duration_minutes = $request->input('duration_minutes');
         $talk->level = $request->input('level');
         $talk->status = 'pending';
         $talk->speaker_id = $user->id;
@@ -109,6 +106,7 @@ class TalkController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * Cette méthode combine maintenant les fonctionnalités de update et schedule
      */
     public function update(Request $request, string $id)
     {
@@ -119,8 +117,68 @@ class TalkController extends Controller
         }
 
         $user = $request->user();
+        $isScheduling = $request->has('scheduled_date') || $request->has('start_time') ||
+            $request->has('end_time') || $request->has('room_id');
 
-        // Seul le speaker propriétaire peut modifier son talk et uniquement si status = pending
+        // CAS 1: SCHEDULING (par organisateur ou superadmin)
+        if ($isScheduling) {
+            // Vérification des autorisations pour le scheduling
+            if (! $user->isOrganizer() && ! $user->isSuperadmin()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Validation pour le scheduling
+            Validator::make($request->all(), [
+                'scheduled_date' => 'required|date|date_format:Y-m-d',
+                'start_time' => 'required|date_format:H:i',
+                'end_time' => 'required|date_format:H:i|after:start_time',
+                'room_id' => 'required|exists:rooms,id',
+            ])->validate();
+
+            $scheduledDate = $request->input('scheduled_date');
+            $startTime = $request->input('start_time');
+            $endTime = $request->input('end_time');
+            $roomId = $request->input('room_id');
+
+            // Vérifier que les heures sont entre 9h et 19h
+            $startTimeObj = Carbon::createFromFormat('H:i', $startTime);
+            $endTimeObj = Carbon::createFromFormat('H:i', $endTime);
+
+            if ($startTimeObj->hour < 9 || $endTimeObj->hour >= 19) {
+                return response()->json(['message' => 'Talk must be scheduled between 09:00 and 19:00'], 400);
+            }
+
+            // Récupérer tous les talks qui pourraient être en conflit
+            $potentialConflicts = Talk::where('room_id', $roomId)
+                ->where('scheduled_date', $scheduledDate)
+                ->where('status', 'scheduled')
+                ->where('id', '!=', $id) // Exclure le talk actuel pour permettre sa mise à jour
+                ->get();
+
+            // Vérifier les conflits
+            foreach ($potentialConflicts as $otherTalk) {
+                $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
+                $otherEnd = Carbon::createFromFormat('H:i', $otherTalk->end_time);
+
+                if ($startTimeObj < $otherEnd && $endTimeObj > $otherStart) {
+                    return response()->json(['message' => 'Room scheduling conflict detected'], 400);
+                }
+            }
+
+            $talk->scheduled_date = $scheduledDate;
+            $talk->start_time = $startTime;
+            $talk->end_time = $endTime;
+            $talk->room_id = $roomId;
+            $talk->status = 'scheduled';
+            $talk->save();
+
+            return response()->json([
+                'message' => 'Talk scheduled successfully',
+                'talk' => $talk,
+            ]);
+        }
+
+        // CAS 2: UPDATE NORMAL (par le speaker propriétaire)
         if ($talk->speaker_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -133,14 +191,12 @@ class TalkController extends Controller
             'title' => 'sometimes|string|max:255',
             'subject' => 'sometimes|string|max:100',
             'description' => 'sometimes|string',
-            'duration_minutes' => 'sometimes|integer|min:15|max:180',
             'level' => 'sometimes|in:beginner,intermediate,advanced',
         ])->validate();
 
         $talk->title = $request->input('title', $talk->title);
         $talk->subject = $request->input('subject', $talk->subject);
         $talk->description = $request->input('description', $talk->description);
-        $talk->duration_minutes = $request->input('duration_minutes', $talk->duration_minutes);
         $talk->level = $request->input('level', $talk->level);
         $talk->save();
 
@@ -211,80 +267,6 @@ class TalkController extends Controller
 
         return response()->json([
             'message' => 'Talk status updated successfully',
-            'talk' => $talk,
-        ]);
-    }
-
-    /**
-     * Schedule talk (date, time, room).
-     */
-    public function schedule(Request $request, string $id)
-    {
-        $talk = Talk::find($id);
-
-        if (! $talk) {
-            return response()->json(['message' => 'Talk not found'], 404);
-        }
-
-        $user = $request->user();
-
-        // Seul un organizer ou superadmin peut programmer un talk
-        if (! $user->isOrganizer() && ! $user->isSuperadmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        // Vérification que le talk est accepté
-        if ($talk->status !== 'accepted') {
-            return response()->json(['message' => 'Only accepted talks can be scheduled'], 400);
-        }
-
-        Validator::make($request->all(), [
-            'scheduled_date' => 'required|date|date_format:Y-m-d',
-            'start_time' => 'required|date_format:H:i',
-            'room_id' => 'required|exists:rooms,id',
-        ])->validate();
-
-        $scheduledDate = $request->input('scheduled_date');
-        $startTime = $request->input('start_time');
-        $roomId = $request->input('room_id');
-
-        // Vérifier que l'heure est entre 9h et 19h
-        $timeObj = Carbon::createFromFormat('H:i', $startTime);
-        if ($timeObj->hour < 9 || $timeObj->hour >= 19) {
-            return response()->json(['message' => 'Talk must be scheduled between 09:00 and 19:00'], 400);
-        }
-
-        // Calculer l'heure de fin
-        $endTime = (clone $timeObj)->addMinutes($talk->duration_minutes)->format('H:i');
-
-        // Récupérer tous les talks qui pourraient être en conflit
-        $potentialConflicts = Talk::where('room_id', $roomId)
-            ->where('scheduled_date', $scheduledDate)
-            ->where('status', 'scheduled')
-            ->get();
-
-        // Vérifier les conflits en PHP plutôt qu'avec des fonctions SQL spécifiques
-        foreach ($potentialConflicts as $otherTalk) {
-            $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
-            $otherEnd = (clone $otherStart)->addMinutes($otherTalk->duration_minutes);
-
-            $newStart = $timeObj;
-            $newEnd = Carbon::createFromFormat('H:i', $endTime);
-
-            // Vérifier si les horaires se chevauchent
-            if ($newStart < $otherEnd && $newEnd > $otherStart) {
-                return response()->json(['message' => 'Room scheduling conflict detected'], 400);
-            }
-        }
-
-        $talk->scheduled_date = $scheduledDate;
-        $talk->start_time = $startTime;
-        $talk->room_id = $roomId;
-        $talk->status = 'scheduled';
-        $talk->save();
-
-        return response()->json([
-            'message' => 'Talk scheduled successfully',
             'talk' => $talk,
         ]);
     }
