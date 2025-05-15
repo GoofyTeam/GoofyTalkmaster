@@ -12,6 +12,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/user`, {
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
       if (!res.ok) {
         setUser(null);
