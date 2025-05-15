@@ -64,7 +64,7 @@ export const Route = createFileRoute("/manage/speaker")({
         const errorData = await talksCall.json();
         console.error(
           `Erreur ${talksCall.status}: ${talksCall.statusText}`,
-          errorData,
+          errorData
         );
         throw notFound();
       }
@@ -77,15 +77,13 @@ export const Route = createFileRoute("/manage/speaker")({
 
       // Transformation des données brutes en utilisant le mapper
       const allTalks: Talk[] = talksData.data.map((apiTalk: ApiTalk) =>
-        mapApiTalkToTalk(apiTalk),
+        mapApiTalkToTalk(apiTalk)
       );
 
       // Filtrer uniquement les talks programmés (scheduled)
       const scheduledTalks = allTalks.filter(
-        (talk) => talk.status === "scheduled",
+        (talk) => talk.status === "scheduled"
       );
-
-      console.log("Talks programmés:", scheduledTalks);
 
       return {
         talks: allTalks,

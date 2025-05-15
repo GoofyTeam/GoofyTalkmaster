@@ -59,7 +59,7 @@ export const Route = createFileRoute("/manage/organizer")({
             "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
           },
           credentials: "include",
-        },
+        }
       );
 
       const fetchAllTalks = fetch(`${API_BASE_URL}/api/talks?per_page=100`, {
@@ -92,13 +92,12 @@ export const Route = createFileRoute("/manage/organizer")({
 
       // Pour toute autre erreur
       if (!pendingResponse.ok || !allTalksResponse.ok) {
-        const errorData = await (pendingResponse.ok
-          ? allTalksResponse
-          : pendingResponse
+        const errorData = await (
+          pendingResponse.ok ? allTalksResponse : pendingResponse
         ).json();
         console.error(
           `Erreur ${pendingResponse.status}: ${pendingResponse.statusText}`,
-          errorData,
+          errorData
         );
         throw notFound();
       }
@@ -111,24 +110,24 @@ export const Route = createFileRoute("/manage/organizer")({
 
       // Transformation des données de l'API au format PendingTalk
       const pendingTalks: PendingTalk[] = pendingData.data.map(
-        (apiTalk: ApiTalk) => mapApiTalkToPendingTalk(apiTalk),
+        (apiTalk: ApiTalk) => mapApiTalkToPendingTalk(apiTalk)
       );
 
       // Transformation de tous les talks
       const allTalks: Talk[] = allTalksData.data.map((apiTalk: ApiTalk) =>
-        mapApiTalkToTalk(apiTalk),
+        mapApiTalkToTalk(apiTalk)
       );
 
       // Filtrer uniquement les talks programmés (scheduled)
       const onlyAcceptedTalks = allTalks.filter(
-        (talk) => talk.status === "scheduled",
+        (talk) => talk.status === "scheduled"
       );
 
-      // Log pour debug
-      console.log(
-        `Tous les talks: ${allTalks.length}, Talks programmés: ${onlyAcceptedTalks.length}`,
-      );
-
+      if (import.meta.env.DEV) {
+        console.log(
+          `Tous les talks: ${allTalks.length}, Talks programmés: ${onlyAcceptedTalks.length}`
+        );
+      }
       return {
         pendingTalks,
         allTalks,

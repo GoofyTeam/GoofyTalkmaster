@@ -12,8 +12,6 @@ const SpeakerRequest = () => {
   });
 
   const onValidate = async (requestId: string) => {
-    console.log("Validate request with ID:", requestId);
-
     try {
       await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
         credentials: "include",
@@ -40,7 +38,7 @@ const SpeakerRequest = () => {
           },
           credentials: "include",
           body: JSON.stringify({}),
-        },
+        }
       );
 
       if (!validateResponse.ok) {
@@ -49,10 +47,6 @@ const SpeakerRequest = () => {
         throw new Error(errorData.message || "Error validating request");
       }
 
-      const data = await validateResponse.json();
-      if (data.success) {
-        console.log("Request validated successfully:", data);
-      }
       toast("Demande validée avec succès");
       router.invalidate();
     } catch (error) {
@@ -61,8 +55,6 @@ const SpeakerRequest = () => {
   };
 
   const onReject = async (requestId: string) => {
-    console.log("Reject request with ID:", requestId);
-
     try {
       await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
         credentials: "include",
@@ -88,7 +80,7 @@ const SpeakerRequest = () => {
           },
           credentials: "include",
           body: JSON.stringify({}),
-        },
+        }
       );
 
       if (!validateResponse.ok) {
@@ -97,10 +89,6 @@ const SpeakerRequest = () => {
         throw new Error(errorData.message || "Error validating request");
       }
 
-      const data = await validateResponse.json();
-      if (data.success) {
-        console.log("Request validated successfully:", data);
-      }
       toast("Demande refusée avec succès");
       router.invalidate();
     } catch (error) {
