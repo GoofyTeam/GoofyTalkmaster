@@ -35,12 +35,13 @@ export const Header = ({ className }: HeaderProps) => {
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer hover:opacity-80">
+                <Avatar className="cursor-pointer hover:opacity-80 !rounded-md h-9 w-9">
                   <AvatarImage
+                    className="rounded-md"
                     src={user?.profile_picture || ""}
                     alt={`${user?.firstname || ""} ${user?.lastname || ""}`}
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="rounded-md">
                     {user?.firstname?.[0] || ""}
                     {user?.lastname?.[0] || ""}
                   </AvatarFallback>
