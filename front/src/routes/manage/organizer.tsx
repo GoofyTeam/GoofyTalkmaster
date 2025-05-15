@@ -48,8 +48,8 @@ export const Route = createFileRoute("/manage/organizer")({
         throw new Error("Impossible de récupérer le token CSRF");
       }
 
-      // Récupérer toutes les demandes en attente
-      const pendingResponse = await fetch(
+      // Préparation des requêtes pour les exécuter en parallèle
+      const fetchPendingTalks = fetch(
         `${API_BASE_URL}/api/talks?status=pending&sort_by=created_at&sort_direction=desc&per_page=50`,
         {
           method: "GET",
@@ -62,19 +62,21 @@ export const Route = createFileRoute("/manage/organizer")({
         },
       );
 
-      // Récupérer tous les talks (pour le planning)
-      const allTalksResponse = await fetch(
-        `${API_BASE_URL}/api/talks?per_page=100`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
-          },
-          credentials: "include",
+      const fetchAllTalks = fetch(`${API_BASE_URL}/api/talks?per_page=100`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
         },
-      );
+        credentials: "include",
+      });
+
+      // Exécution des requêtes en parallèle
+      const [pendingResponse, allTalksResponse] = await Promise.all([
+        fetchPendingTalks,
+        fetchAllTalks,
+      ]);
 
       // Si l'utilisateur n'est pas autorisé (401) ou la session a expiré
       if (pendingResponse.status === 401 || allTalksResponse.status === 401) {
@@ -101,8 +103,11 @@ export const Route = createFileRoute("/manage/organizer")({
         throw notFound();
       }
 
-      const pendingData = await pendingResponse.json();
-      const allTalksData = await allTalksResponse.json();
+      // Traitement des réponses en parallèle
+      const [pendingData, allTalksData] = await Promise.all([
+        pendingResponse.json(),
+        allTalksResponse.json(),
+      ]);
 
       // Transformation des données de l'API au format PendingTalk
       const pendingTalks: PendingTalk[] = pendingData.data.map(
