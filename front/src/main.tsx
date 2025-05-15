@@ -19,6 +19,7 @@ export const router = createRouter({
       user: null,
       role: "public",
       loading: true,
+      isLoggingOut: false,
       fetchUser: async () => {
         return null;
       },

@@ -6,8 +6,13 @@ import { AuthContext } from "./useAuth";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const fetchUser = useCallback(async (): Promise<User | null> => {
+    if (isLoggingOut) {
+      return null;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/user`, {
@@ -46,11 +51,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isLoggingOut]);
 
   const logout = async () => {
+    setIsLoggingOut(true);
     try {
-      // Récupération du CSRF token avant la requête
+      setUser(null);
+
       const response = await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
         method: "GET",
         headers: {
@@ -88,18 +95,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error(errorData.message || "Erreur de déconnexion");
       }
 
-      // En cas de succès, on vide l'utilisateur
-      setUser(null);
+      document.cookie =
+        "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie =
+        "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      console.log("Déconnexion réussie");
+      setTimeout(() => {
+        window.location.href = "/auth/login";
+      }, 100);
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
-      // On vide quand même l'utilisateur en cas d'erreur côté client
-      setUser(null);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    if (!isLoggingOut) {
+      fetchUser();
+    }
+  }, [fetchUser, isLoggingOut]);
 
   return (
     <AuthContext.Provider
@@ -110,6 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         logout,
         fetchUser,
+        isLoggingOut,
       }}
     >
       {children}

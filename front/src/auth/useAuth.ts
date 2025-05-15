@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 
 export interface AuthContextType extends AuthState {
   loading: boolean;
+  isLoggingOut: boolean;
   logout: () => Promise<void>;
   fetchUser: () => Promise<User | null>;
 }

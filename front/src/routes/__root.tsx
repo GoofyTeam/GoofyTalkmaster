@@ -15,6 +15,10 @@ interface TalkmasterContext {
 
 export const Route = createRootRouteWithContext<TalkmasterContext>()({
   beforeLoad: async ({ context, location }) => {
+    if (context.auth.isLoggingOut) {
+      return;
+    }
+
     const userData = await context.auth.fetchUser();
     const isLoggedIn = !!userData;
     const userRole = userData?.role || "public";

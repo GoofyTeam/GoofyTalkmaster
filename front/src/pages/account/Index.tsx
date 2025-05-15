@@ -99,9 +99,10 @@ function AccountPage() {
   const handleLogout = React.useCallback(async () => {
     try {
       await logout();
-      navigate({ to: "/app" });
+      // La redirection sera gérée par le AuthProvider
     } catch (error) {
-      navigate({ to: "/app" });
+      console.error("Erreur de déconnexion:", error);
+      navigate({ to: "/auth/login" });
     }
   }, [logout, navigate]);
 
