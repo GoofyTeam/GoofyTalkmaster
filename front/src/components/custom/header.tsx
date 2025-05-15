@@ -84,7 +84,10 @@ export const Header = ({ className }: HeaderProps) => {
                   role === "organizer" ||
                   role === "superadmin" ? (
                   <DropdownMenuItem asChild>
-                    <Link to="/manage" className="cursor-pointer w-full">
+                    <Link
+                      to="/manage/speaker"
+                      className="cursor-pointer w-full"
+                    >
                       Espace conférencier
                     </Link>
                   </DropdownMenuItem>
@@ -92,7 +95,10 @@ export const Header = ({ className }: HeaderProps) => {
                 {role === "organizer" || role === "superadmin" ? (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link to="/manage" className="cursor-pointer w-full">
+                      <Link
+                        to="/manage/organizer"
+                        className="cursor-pointer w-full"
+                      >
                         Espace gestionnaire
                       </Link>
                     </DropdownMenuItem>
