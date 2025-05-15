@@ -1,15 +1,6 @@
 import { useAuth } from "@/auth/useAuth";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { useNavigate } from "@tanstack/react-router";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +22,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { API_BASE_URL } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,7 +37,6 @@ const AccountFormSchema = z.object({
     message: "Le nom doit comporter au moins 2 caractères.",
   }),
   description: z.string(),
-  profile_picture: z.string().optional(),
 });
 
 const PasswordFormSchema = z
@@ -65,29 +57,70 @@ const PasswordFormSchema = z
   });
 
 function AccountPage() {
-  const { user: authUser, logout } = useAuth();
+  const { user, logout, loading, fetchUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = React.useState(false);
 
-  // Créer un utilisateur factice pour les tests si l'utilisateur n'est pas connecté
-  const user = authUser || {
-    id: "test-user",
-    role: "public",
-    lastname: "Doe",
-    firstname: "John",
-    email: "john.doe@example.com",
-    profile_picture: "",
-    description: "Utilisateur test",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  // États pour les messages de validation séparés par formulaire
+  const [profileError, setProfileError] = React.useState("");
+  const [profileSuccess, setProfileSuccess] = React.useState("");
+  const [passwordError, setPasswordError] = React.useState("");
+  const [passwordSuccess, setPasswordSuccess] = React.useState("");
+  const [accountError, setAccountError] = React.useState("");
+  const [accountSuccess, setAccountSuccess] = React.useState("");
 
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [showPasswords, setShowPasswords] = React.useState(false);
+
+  const [profilePicture, setProfilePicture] = React.useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string>("");
+
+  // Mettre useEffect en premier pour éviter des erreurs de hooks
+  React.useEffect(() => {
+    if (!user && !loading) {
+      navigate({ to: "/app" });
+    }
+  }, [user, loading, navigate]);
+
+  // Function pour effacer les messages après un certain délai
+  const clearProfileMessages = React.useCallback(() => {
+    setTimeout(() => {
+      setProfileError("");
+      setProfileSuccess("");
+    }, 5000);
+  }, []);
+
+  const clearPasswordMessages = React.useCallback(() => {
+    setTimeout(() => {
+      setPasswordError("");
+      setPasswordSuccess("");
+    }, 5000);
+  }, []);
+
+  const clearAccountMessages = React.useCallback(() => {
+    setTimeout(() => {
+      setAccountError("");
+      setAccountSuccess("");
+    }, 5000);
+  }, []);
+
+  // Fonction de déconnexion
+  const handleLogout = React.useCallback(async () => {
+    try {
+      await logout();
+      navigate({ to: "/app" });
+    } catch (error) {
+      navigate({ to: "/app" });
+    }
+  }, [logout, navigate]);
+
+  // Gestionnaire de formulaire
   const form = useForm<z.infer<typeof AccountFormSchema>>({
     resolver: zodResolver(AccountFormSchema),
     defaultValues: {
-      firstname: user.firstname || "",
-      lastname: user.lastname || "",
-      description: user.description || "",
-      profile_picture: user.profile_picture || "",
+      firstname: user?.firstname || "",
+      lastname: user?.lastname || "",
+      description: user?.description || "",
     },
   });
 
@@ -100,28 +133,267 @@ function AccountPage() {
     },
   });
 
-  const handleSaveProfile = (values: z.infer<typeof AccountFormSchema>) => {
-    // API call to save profile information
-    console.log(values);
-    setIsEditMode(false);
+  // Gestionnaire de changement de photo de profil
+  const handleProfilePictureChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (event.target?.files?.[0]) {
+      const file = event.target.files[0];
+      setProfilePicture(file);
+
+      // Créer une URL de prévisualisation
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+    }
   };
 
-  const handlePasswordChange = (values: z.infer<typeof PasswordFormSchema>) => {
-    // API call to change password
-    console.log(values);
-    passwordForm.reset();
-  };
+  // Réinitialiser la prévisualisation lorsque le mode d'édition change
+  React.useEffect(() => {
+    if (!isEditMode) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setPreviewUrl("");
+      setProfilePicture(null);
+    }
+  }, [isEditMode, previewUrl]);
 
-  const handleBecomeSpeaker = () => {
-    // API call to request speaker status
-    console.log("Speaker request");
-  };
+  // Fonction pour sauvegarder le profil avec photo
+  const handleSaveProfile = React.useCallback(
+    async (values: z.infer<typeof AccountFormSchema>) => {
+      if (!user) {
+        setProfileError("Vous devez être connecté pour modifier votre profil");
+        clearProfileMessages();
+        return;
+      }
 
-  const handleDeleteAccount = () => {
-    // API call to delete account
-    console.log("Account deleted");
-    logout();
-  };
+      setIsSaving(true);
+      setProfileError("");
+      setProfileSuccess("");
+
+      try {
+        // Obtenir un cookie CSRF frais
+        await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
+          credentials: "include",
+        });
+
+        const csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("XSRF-TOKEN="))
+          ?.split("=")[1];
+
+        if (!csrfToken) {
+          throw new Error("CSRF token not found");
+        }
+
+        // Utiliser FormData pour l'envoi de fichiers
+        const formData = new FormData();
+        formData.append("name", values.lastname);
+        formData.append("first_name", values.firstname);
+        formData.append("description", values.description || "");
+        formData.append("email", user.email);
+        formData.append("role", user.role);
+        formData.append("_method", "PUT"); // Pour simuler une requête PUT
+
+        // Ajouter la photo de profil si elle a été modifiée
+        if (profilePicture) {
+          formData.append("profile_picture", profilePicture);
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/users/${user.id}`, {
+          method: "POST", // Utiliser POST pour FormData mais avec _method=PUT pour Laravel
+          headers: {
+            Accept: "application/json",
+            "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+          },
+          credentials: "include",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Erreur ${response.status}: ${response.statusText}`,
+          );
+        }
+
+        // Rafraîchir les données utilisateur dans le contexte
+        await fetchUser();
+
+        // Message de succès
+        setProfileSuccess("Profil mis à jour avec succès!");
+        clearProfileMessages();
+        setIsEditMode(false);
+      } catch (err) {
+        setProfileError(
+          err instanceof Error
+            ? err.message
+            : "Erreur lors de la mise à jour du profil",
+        );
+        clearProfileMessages();
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [user, fetchUser, clearProfileMessages, profilePicture],
+  );
+
+  // Fonction pour changer le mot de passe
+  const handlePasswordChange = React.useCallback(
+    async (values: z.infer<typeof PasswordFormSchema>) => {
+      if (!user) {
+        setPasswordError(
+          "Vous devez être connecté pour changer votre mot de passe",
+        );
+        clearPasswordMessages();
+        return;
+      }
+
+      setIsSaving(true);
+      setPasswordError("");
+      setPasswordSuccess("");
+
+      try {
+        // Obtenir un cookie CSRF frais
+        await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
+          credentials: "include",
+        });
+
+        const csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("XSRF-TOKEN="))
+          ?.split("=")[1];
+
+        if (!csrfToken) {
+          throw new Error("CSRF token not found");
+        }
+
+        // Envoi des données de mot de passe avec le format attendu par l'API
+        const passwordResponse = await fetch(
+          `${API_BASE_URL}/api/user/password`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              current_password: values.current_password,
+              password: values.new_password,
+              password_confirmation: values.confirm_password,
+            }),
+          },
+        );
+
+        if (!passwordResponse.ok) {
+          const errorData = await passwordResponse.json();
+          throw new Error(
+            errorData.message ||
+              `Erreur ${passwordResponse.status}: ${passwordResponse.statusText}`,
+          );
+        }
+
+        // Réinitialiser le formulaire
+        passwordForm.reset();
+
+        // Message de succès
+        setPasswordSuccess("Mot de passe mis à jour avec succès!");
+        clearPasswordMessages();
+      } catch (err) {
+        setPasswordError(
+          err instanceof Error
+            ? err.message
+            : "Erreur lors du changement de mot de passe",
+        );
+        clearPasswordMessages();
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [user, passwordForm, clearPasswordMessages],
+  );
+
+  // Fonction pour devenir conférencier
+  const handleBecomeSpeaker = React.useCallback(async () => {
+    if (!user) {
+      setAccountError("Vous devez être connecté pour devenir conférencier");
+      clearAccountMessages();
+      return;
+    }
+
+    setIsSaving(true);
+    setAccountError("");
+    setAccountSuccess("");
+
+    try {
+      // Obtenir un cookie CSRF frais
+      await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
+        credentials: "include",
+      });
+
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("XSRF-TOKEN="))
+        ?.split("=")[1];
+
+      if (!csrfToken) {
+        throw new Error("CSRF token not found");
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/users/${user.id}/become-speaker`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+          },
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            `Erreur ${response.status}: ${response.statusText}`,
+        );
+      }
+
+      // Rafraîchir les données utilisateur dans le contexte
+      await fetchUser();
+
+      // Message de succès
+      setAccountSuccess(
+        "Votre demande pour devenir conférencier a été envoyée avec succès!",
+      );
+      clearAccountMessages();
+    } catch (err) {
+      setAccountError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors de la demande pour devenir conférencier",
+      );
+      clearAccountMessages();
+    } finally {
+      setIsSaving(false);
+    }
+  }, [user, fetchUser, clearAccountMessages]);
+
+  // Si en chargement, afficher un indicateur
+  if (loading) {
+    return <div className="container mx-auto py-8">Chargement...</div>;
+  }
+
+  // Si l'utilisateur n'est pas connecté, la redirection est gérée par useEffect
+  if (!user) {
+    return <div className="container mx-auto py-8">Redirection...</div>;
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -137,21 +409,40 @@ function AccountPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Messages de validation pour le profil */}
+            {profileError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {profileError}
+              </div>
+            )}
+
+            {profileSuccess && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                {profileSuccess}
+              </div>
+            )}
+
             <div className="flex items-center gap-4 mb-6">
               <Avatar className="w-24 h-24">
                 <AvatarImage
-                  src={user.profile_picture}
+                  src={previewUrl || user.profile_picture}
                   alt={`${user.firstname} ${user.lastname}`}
                 />
                 <AvatarFallback>
-                  {user.firstname[0]}
-                  {user.lastname[0]}
+                  {user.firstname?.[0]}
+                  {user.lastname?.[0]}
                 </AvatarFallback>
               </Avatar>
               {isEditMode && (
                 <div>
                   <Label htmlFor="profile_picture">Photo de profil</Label>
-                  <Input id="profile_picture" type="file" className="mt-1" />
+                  <Input
+                    id="profile_picture"
+                    type="file"
+                    className="mt-1"
+                    accept="image/jpeg,image/png,image/gif"
+                    onChange={handleProfilePictureChange}
+                  />
                 </div>
               )}
             </div>
@@ -216,10 +507,13 @@ function AccountPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setIsEditMode(false)}
+                      disabled={isSaving}
                     >
                       Annuler
                     </Button>
-                    <Button type="submit">Enregistrer</Button>
+                    <Button type="submit" disabled={isSaving}>
+                      {isSaving ? "Enregistrement..." : "Enregistrer"}
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex justify-end">
@@ -235,13 +529,46 @@ function AccountPage() {
 
         {/* Changement de mot de passe */}
         <Card>
-          <CardHeader>
-            <CardTitle>Modifier le mot de passe</CardTitle>
-            <CardDescription>
-              Assurez-vous d'utiliser un mot de passe fort
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Modifier le mot de passe</CardTitle>
+              <CardDescription>
+                Assurez-vous d'utiliser un mot de passe fort
+              </CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              onClick={() => setShowPasswords(!showPasswords)}
+              className="cursor-pointer"
+              title={
+                showPasswords
+                  ? "Masquer les mots de passe"
+                  : "Afficher les mots de passe"
+              }
+            >
+              {showPasswords ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </Button>
           </CardHeader>
           <CardContent>
+            {/* Messages de validation pour le changement de mot de passe */}
+            {passwordError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                {passwordSuccess}
+              </div>
+            )}
+
             <Form {...passwordForm}>
               <form
                 onSubmit={passwordForm.handleSubmit(handlePasswordChange)}
@@ -254,7 +581,10 @@ function AccountPage() {
                     <FormItem>
                       <FormLabel>Mot de passe actuel</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type={showPasswords ? "text" : "password"}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -268,7 +598,10 @@ function AccountPage() {
                     <FormItem>
                       <FormLabel>Nouveau mot de passe</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type={showPasswords ? "text" : "password"}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -282,7 +615,10 @@ function AccountPage() {
                     <FormItem>
                       <FormLabel>Confirmer le mot de passe</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <Input
+                          type={showPasswords ? "text" : "password"}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -290,7 +626,9 @@ function AccountPage() {
                 />
 
                 <div className="flex justify-end">
-                  <Button type="submit">Changer le mot de passe</Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Chargement..." : "Changer le mot de passe"}
+                  </Button>
                 </div>
               </form>
             </Form>
@@ -303,11 +641,24 @@ function AccountPage() {
             <CardTitle>Actions du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Messages de validation pour les actions du compte */}
+            {accountError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {accountError}
+              </div>
+            )}
+
+            {accountSuccess && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                {accountSuccess}
+              </div>
+            )}
+
             {/* Bouton pour devenir conférencier - uniquement visible pour les utilisateurs BASIC avec email vérifié */}
             {user.role === "public" && (
               <div>
-                <Button onClick={handleBecomeSpeaker}>
-                  Devenir conférencier
+                <Button onClick={handleBecomeSpeaker} disabled={isSaving}>
+                  {isSaving ? "Envoi en cours..." : "Devenir conférencier"}
                 </Button>
                 <p className="text-sm text-muted-foreground mt-1">
                   Faites une demande pour devenir conférencier sur notre
@@ -320,38 +671,13 @@ function AccountPage() {
 
             {/* Déconnexion */}
             <div>
-              <Button variant="outline" onClick={logout}>
+              <Button
+                variant="destructive"
+                onClick={handleLogout}
+                disabled={isSaving}
+              >
                 Se déconnecter
               </Button>
-            </div>
-
-            <Separator />
-
-            {/* Suppression du compte */}
-            <div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Supprimer mon compte</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Êtes-vous absolument sûr?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Cette action ne peut pas être annulée. Cela supprimera
-                      définitivement votre compte et toutes les données
-                      associées.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAccount}>
-                      Continuer
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </CardContent>
         </Card>
