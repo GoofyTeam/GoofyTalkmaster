@@ -22,7 +22,7 @@ export const Route = createFileRoute("/manage/speaker-request")({
       `${API_BASE_URL}/api/speakers-request?status=open`,
       {
         credentials: "include",
-      }
+      },
     );
     if (!requestCall.ok) {
       throw notFound();

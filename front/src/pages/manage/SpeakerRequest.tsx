@@ -38,7 +38,7 @@ const SpeakerRequest = () => {
           },
           credentials: "include",
           body: JSON.stringify({}),
-        }
+        },
       );
 
       if (!validateResponse.ok) {
@@ -80,7 +80,7 @@ const SpeakerRequest = () => {
           },
           credentials: "include",
           body: JSON.stringify({}),
-        }
+        },
       );
 
       if (!validateResponse.ok) {
