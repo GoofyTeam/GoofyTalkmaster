@@ -27,9 +27,9 @@ function CustomToolbar({ label = "Votre planning" }) {
 }
 
 const minTime = new Date();
-minTime.setHours(8, 0, 0); // Affiche à partir de 08:00
+minTime.setHours(9, 0, 0); // Affiche à partir de 08:00
 const maxTime = new Date();
-maxTime.setHours(17, 0, 0); // Jusqu’à 17:00
+maxTime.setHours(19, 0, 0); // Jusqu’à 17:00
 
 const UserPlanning = () => {
   const localizer = momentLocalizer(moment);
