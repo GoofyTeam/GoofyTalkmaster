@@ -1,22 +1,15 @@
 import { format, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Search, Calendar as CalendarIcon } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { SALLES, LEVELS, STATUS } from "@/lib/utils";
+import { LEVELS, SALLES, STATUS } from "@/lib/utils";
+import { CustomDatePicker } from "@/components/ui/custom-date-picker";
 
 export type Filters = {
   search?: string;
@@ -35,11 +28,7 @@ type TalkFiltersProps = {
 export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
   const { search, subject, date, room_id, level, status } = filters;
 
-  const formattedDate = date
-    ? format(parseISO(date), "dd/MM/yyyy", { locale: fr })
-    : "";
-
-  const update = (key: keyof Filters, value: string | undefined) => {
+  const update = (key: keyof Filters, value?: string) => {
     onFiltersChange({
       ...filters,
       [key]: value || undefined,
@@ -47,17 +36,7 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
   };
 
   return (
-    <div
-      className="
-        grid 
-        grid-cols-1 
-        sm:grid-cols-2 
-        md:grid-cols-3 
-        lg:grid-cols-6 
-        gap-4 
-        mb-8
-      "
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
       <div className="w-full">
         <div className="relative">
           <Search
@@ -65,45 +44,32 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <Input
+            className="pl-10 w-full"
             placeholder="Rechercher..."
             value={search ?? ""}
             onChange={(e) => update("search", e.target.value)}
-            className="pl-10 w-full"
           />
         </div>
       </div>
 
       <div className="w-full">
         <Input
+          className="w-full"
           placeholder="Sujet"
           value={subject ?? ""}
           onChange={(e) => update("subject", e.target.value)}
-          className="w-full"
         />
       </div>
 
       <div className="w-full">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formattedDate || "Date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-full max-w-xs p-0">
-            <Calendar
-              mode="single"
-              selected={date ? parseISO(date) : undefined}
-              onSelect={(d) =>
-                update("date", d ? format(d, "yyyy-MM-dd") : undefined)
-              }
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <CustomDatePicker
+          date={date ? parseISO(date) : undefined}
+          onDateChange={(d) =>
+            update("date", d ? format(d, "yyyy-MM-dd") : undefined)
+          }
+          placeholder="Date"
+          className="w-full"
+        />
       </div>
 
       <div className="w-full">
