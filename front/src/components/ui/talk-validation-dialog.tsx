@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
+import { CustomDatePicker } from "@/components/ui/custom-date-picker";
 import {
   Dialog,
   DialogContent,
@@ -148,9 +148,9 @@ export function TalkValidationDialog({
         return;
       }
 
-      // Vérifier que l'heure de fin est avant 19h00
-      if (endTime > "19:00") {
-        toast.error("L'heure de fin ne peut pas dépasser 19h00");
+      // Vérifier que l'heure de fin est avant 20h00 (ajusté selon votre besoin)
+      if (endTime > "20:00") {
+        toast.error("L'heure de fin ne peut pas dépasser 20h00");
         return;
       }
 
@@ -199,7 +199,7 @@ export function TalkValidationDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="date">Date</Label>
-            <DatePicker
+            <CustomDatePicker
               date={selectedDateObj}
               onDateChange={handleDateChange}
               placeholder="Sélectionner une date"
