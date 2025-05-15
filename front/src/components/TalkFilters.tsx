@@ -21,7 +21,7 @@ import { SALLES, LEVELS, STATUS } from "@/lib/utils";
 export type Filters = {
   search?: string;
   subject?: string;
-  date?: string; // "YYYY-MM-DD"
+  date?: string;
   room_id?: string;
   level?: string;
   status?: string;
@@ -58,7 +58,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         mb-8
       "
     >
-      {/* Recherche */}
       <div className="w-full">
         <div className="relative">
           <Search
@@ -74,7 +73,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         </div>
       </div>
 
-      {/* Sujet */}
       <div className="w-full">
         <Input
           placeholder="Sujet"
@@ -84,7 +82,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         />
       </div>
 
-      {/* Date */}
       <div className="w-full">
         <Popover>
           <PopoverTrigger asChild>
@@ -109,7 +106,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         </Popover>
       </div>
 
-      {/* Salle */}
       <div className="w-full">
         <Select
           value={room_id ?? "all"}
@@ -129,7 +125,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         </Select>
       </div>
 
-      {/* Niveau */}
       <div className="w-full">
         <Select
           value={level ?? "all"}
@@ -149,7 +144,6 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
         </Select>
       </div>
 
-      {/* Statut */}
       <div className="w-full">
         <Select
           value={status ?? "all"}
