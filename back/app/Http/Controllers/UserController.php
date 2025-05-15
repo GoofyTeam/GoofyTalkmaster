@@ -75,22 +75,10 @@ class UserController extends Controller
         }
 
         Validator::make($request->all(), [
-            /**
-             * Nombre d'éléments par page
-             *
-             * @var int
-             *
-             * @example 20
-             */
+            // Nombre d'éléments par page (exemple : 20)
             'per_page' => 'integer|min:1|max:100',
 
-            /**
-             * Numéro de la page à afficher
-             *
-             * @var int
-             *
-             * @example 2
-             */
+            // Numéro de la page à afficher (exemple : 2)
             'page' => 'integer|min:1',
 
             /**
@@ -251,7 +239,7 @@ class UserController extends Controller
             /**
              * Description ou biographie de l'utilisateur (optionnel)
              *
-             * @var string|null
+             * @var string|nullable
              *
              * @example "Développeuse fullstack avec 5 ans d'expérience"
              */
@@ -345,6 +333,7 @@ class UserController extends Controller
      * @return \Illuminate\Http\JsonResponse
      *
      * @throws \Illuminate\Validation\ValidationException Si les données sont invalides
+     *зишкинг
      */
     public function update(Request $request, User $user)
     {
@@ -387,7 +376,7 @@ class UserController extends Controller
             /**
              * Description ou biographie de l'utilisateur
              *
-             * @var string|null
+             * @var string|nullable
              *
              * @example "Expert en cybersécurité et DevOps"
              */
@@ -405,7 +394,7 @@ class UserController extends Controller
             /**
              * Photo de profil de l'utilisateur (fichier image)
              *
-             * @var file
+             * @var string|nullable
              */
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
@@ -414,8 +403,6 @@ class UserController extends Controller
         if ($authUser->isSuperadmin() || $authUser->isOrganizer()) {
             /**
              * Rôle attribué à l'utilisateur
-             *
-             * @var string
              *
              * @example "organizer"
              */
@@ -426,8 +413,6 @@ class UserController extends Controller
         if ($request->filled('password')) {
             /**
              * Nouveau mot de passe de l'utilisateur (min. 8 caractères)
-             *
-             * @var string
              *
              * @example "NouveauMotDePasse456!"
              */
@@ -604,7 +589,7 @@ class UserController extends Controller
          *
          * @status 200
          *
-         * @body {"message": "User promoted to speaker successfully", "user": {"id": 4, "name": "Petit", "first_name": "Julie", "email": "julie.petit@example.com", "description": "Développeuse front-end passionnée", "role": "speaker", "created_at": "2025-05-15T08:00:00.000000Z", "updated_at": "2025-05-15T12:00:00.000000Z"}}
+         *---@body {"message": "User promoted to speaker successfully", "user": {"id": 4, "name": "Petit", "first_name": "Julie", "email": "julie.petit@example.com", "description": "Développeuse front-end passionnée", "role": "speaker", "created_at": "2025-05-15T08:00:00.000000Z", "updated_at": "2025-05-15T12:00:00.000000Z"}}
          */
         return response()->json([
             'message' => 'User promoted to speaker successfully',
@@ -664,7 +649,7 @@ class UserController extends Controller
          *
          * @status 200
          *
-         * @body {"message": "User demoted to public successfully", "user": {"id": 5, "name": "Bernard", "first_name": "Pierre", "email": "pierre.bernard@example.com", "description": "Amateur de technologie", "role": "public", "created_at": "2025-05-15T07:00:00.000000Z", "updated_at": "2025-05-15T13:00:00.000000Z"}}
+         *---@body {"message": "User demoted to public successfully", "user": {"id": 5, "name": "Bernard", "first_name": "Pierre", "email": "pierre.bernard@example.com", "description": "Amateur de technologie", "role": "public", "created_at": "2025-05-15T07:00:00.000000Z", "updated_at": "2025-05-15T13:00:00.000000Z"}}
          */
         return response()->json([
             'message' => 'User demoted to public successfully',
@@ -677,10 +662,8 @@ class UserController extends Controller
      *
      * Retourne les informations de l'utilisateur actuellement authentifié.
      * Cette route nécessite une authentification valide.
-     *
-     * @method GET
-     *
-     * @url /api/user
+     * Méthode HTTP: GET
+     * URL: /api/user
      *
      * @param  Request  $request  La requête HTTP
      * @return \Illuminate\Http\JsonResponse
