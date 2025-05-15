@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -73,6 +73,9 @@ export function TalkValidationDialog({
   const [startTime, setStartTime] = useState<string>("09:00");
   const [duration, setDuration] = useState<number>(90);
   const [endTime, setEndTime] = useState<string>("10:30");
+  const [selectedDateObj, setSelectedDateObj] = useState<Date | undefined>(
+    undefined,
+  );
 
   // Obtenir la date d'aujourd'hui pour les valeurs par défaut
   const today = new Date().toISOString().split("T")[0];
@@ -99,13 +102,27 @@ export function TalkValidationDialog({
     if (!open || !talk) {
       setSelectedRoomId("");
       setSelectedDate("");
+      setSelectedDateObj(undefined);
       setStartTime("09:00");
       setDuration(90); // Par défaut 1h30
     } else {
       // Initialiser la date à aujourd'hui
+      const todayDate = new Date();
+      setSelectedDateObj(todayDate);
       setSelectedDate(today);
     }
   }, [open, talk, today]);
+
+  // Gérer le changement de date via le DatePicker
+  const handleDateChange = (date?: Date) => {
+    setSelectedDateObj(date);
+    if (date) {
+      const formattedDate = date.toISOString().split("T")[0];
+      setSelectedDate(formattedDate);
+    } else {
+      setSelectedDate("");
+    }
+  };
 
   const handleValidate = () => {
     if (talk && isFormValid) {
@@ -182,12 +199,10 @@ export function TalkValidationDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={selectedDate}
-              min={today}
-              onChange={(e) => setSelectedDate(e.target.value)}
+            <DatePicker
+              date={selectedDateObj}
+              onDateChange={handleDateChange}
+              placeholder="Sélectionner une date"
             />
           </div>
 
