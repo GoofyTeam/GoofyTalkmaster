@@ -19,6 +19,31 @@ class DatabaseSeeder extends Seeder
             'role' => 'superadmin',
         ]);
 
+        User::factory()->create([
+            'name' => 'MyUser',
+            'first_name' => 'User',
+            'email' => 'user@test.com',
+            'role' => 'public',
+        ]);
+        User::factory()->create([
+            'name' => 'MyUser2',
+            'first_name' => 'User',
+            'email' => 'user2@test.com',
+            'role' => 'public',
+        ]);
+        User::factory()->create([
+            'name' => 'MyUser3',
+            'first_name' => 'User',
+            'email' => 'user3@test.com',
+            'role' => 'public',
+        ]);
+        User::factory()->create([
+            'name' => 'MyUser4',
+            'first_name' => 'User',
+            'email' => 'user4@test.com',
+            'role' => 'public',
+        ]);
+
         User::factory(10)->create([
             'role' => 'speaker',
         ]);

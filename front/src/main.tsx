@@ -25,7 +25,7 @@ export const router = createRouter({
       logout: async () => {},
     },
   },
-  defaultPreload: "intent",
+  //defaultPreload: "intent",
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
