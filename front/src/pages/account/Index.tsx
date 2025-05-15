@@ -292,8 +292,25 @@ function AccountPage() {
         passwordForm.reset();
 
         // Message de succès
-        setPasswordSuccess("Mot de passe mis à jour avec succès!");
+        setPasswordSuccess(
+          "Mot de passe mis à jour avec succès! Déconnexion en cours...",
+        );
         clearPasswordMessages();
+
+        // Attendre un court instant pour permettre à l'utilisateur de voir le message de succès
+        setTimeout(async () => {
+          try {
+            // Déconnecter l'utilisateur
+            await logout();
+            // La redirection sera gérée par le AuthProvider
+          } catch (error) {
+            console.error(
+              "Erreur lors de la déconnexion après changement de mot de passe:",
+              error,
+            );
+            navigate({ to: "/auth/login" });
+          }
+        }, 2000);
       } catch (err) {
         setPasswordError(
           err instanceof Error
@@ -305,7 +322,7 @@ function AccountPage() {
         setIsSaving(false);
       }
     },
-    [user, passwordForm, clearPasswordMessages],
+    [user, passwordForm, clearPasswordMessages, logout, navigate],
   );
 
   // Si en chargement, afficher un indicateur
