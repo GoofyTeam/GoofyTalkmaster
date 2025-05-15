@@ -124,11 +124,11 @@ export const Route = createFileRoute("/manage/organizer")({
         (talk) => talk.status === "scheduled",
       );
 
-      // Log pour debug
-      console.log(
-        `Tous les talks: ${allTalks.length}, Talks programmés: ${onlyAcceptedTalks.length}`,
-      );
-
+      if (import.meta.env.DEV) {
+        console.log(
+          `Tous les talks: ${allTalks.length}, Talks programmés: ${onlyAcceptedTalks.length}`,
+        );
+      }
       return {
         pendingTalks,
         allTalks,

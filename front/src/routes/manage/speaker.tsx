@@ -85,8 +85,6 @@ export const Route = createFileRoute("/manage/speaker")({
         (talk) => talk.status === "scheduled",
       );
 
-      console.log("Talks programmés:", scheduledTalks);
-
       return {
         talks: allTalks,
         numberOfTalks: talksData.total,

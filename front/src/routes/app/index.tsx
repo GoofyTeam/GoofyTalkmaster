@@ -1,3 +1,4 @@
+import Homepage from "@/pages/homepage/Index";
 import { createFileRoute } from "@tanstack/react-router";
 import Homepage from "@/pages/homepage/Index";
 

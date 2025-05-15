@@ -18,7 +18,6 @@ export const Route = createFileRoute("/manage/speaker-request")({
     }
   },
   loader: async () => {
-    console.log("SpeakerRequest loader");
     const requestCall = await fetch(
       `${API_BASE_URL}/api/speakers-request?status=open`,
       {

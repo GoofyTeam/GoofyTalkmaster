@@ -100,7 +100,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       document.cookie =
         "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-      console.log("Déconnexion réussie");
+      if (import.meta.env.DEV) {
+        console.log("Déconnexion réussie");
+      }
       setTimeout(() => {
         window.location.href = "/auth/login";
       }, 100);

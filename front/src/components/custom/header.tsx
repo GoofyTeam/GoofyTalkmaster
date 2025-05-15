@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
+import { useCallback } from "react";
 import { ModeToggle } from "../mode-toggle";
 
 interface HeaderProps {
@@ -16,7 +18,17 @@ interface HeaderProps {
 }
 
 export const Header = ({ className }: HeaderProps) => {
-  const { user, isAuthenticated, role } = useAuth();
+  const { user, isAuthenticated, role, logout } = useAuth();
+
+  // Fonction de déconnexion
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+      // La redirection sera gérée par le AuthProvider
+    } catch (error) {
+      console.error("Erreur de déconnexion:", error);
+    }
+  }, [logout]);
 
   return (
     <header
@@ -94,6 +106,14 @@ export const Header = ({ className }: HeaderProps) => {
                     </DropdownMenuItem>
                   </>
                 ) : null}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Déconnexion
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
