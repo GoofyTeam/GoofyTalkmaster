@@ -29,6 +29,10 @@ export const Route = createFileRoute("/manage/organizer")({
       // Obtenir un cookie CSRF frais
       await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
 
       const csrfToken = document.cookie
