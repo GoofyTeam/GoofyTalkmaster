@@ -80,9 +80,9 @@ class UserControllerTest extends TestCase
 
         $response = $this->actingAs($admin)->getJson("/api/users/{$user->id}");
 
-        $response->assertStatus(201)
+        $response->assertStatus(200)
             ->assertJson([
-                'message' => 'User created successfully',
+                'message' => 'User retrieved successfully',
                 'user' => $user->toArray(),
             ]);
     }
