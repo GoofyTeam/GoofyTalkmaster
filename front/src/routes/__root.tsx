@@ -25,20 +25,19 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
     console.log("userRole", userRole);
     console.log("userData", userData);
 
-    if (isLoggedIn && isAuthPage) {
-      redirect({
-        to: "/app",
-        throw: true,
-      });
+    if (!isLoggedIn && !isAuthPage) {
+      throw redirect({ to: "/auth/login" });
     }
 
-    if (userRole === "public" && isManagePage) {
-      redirect({
-        to: "/app",
-        throw: true,
-      });
+    if (isLoggedIn && isAuthPage) {
+      throw redirect({ to: "/app" });
+    }
+
+    if (isLoggedIn && userRole === "public" && isManagePage) {
+      throw redirect({ to: "/app" });
     }
   },
+
   component: () => (
     <>
       <HelmetProvider>
