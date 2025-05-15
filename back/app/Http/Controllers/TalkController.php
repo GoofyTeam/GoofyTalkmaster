@@ -58,8 +58,7 @@ class TalkController extends Controller
     {
         $user = $request->user();
 
-        // Seuls les speakers peuvent créer des talks
-        if (! $user->isSpeaker()) {
+        if ($user->isPublic()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
