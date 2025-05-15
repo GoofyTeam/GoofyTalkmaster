@@ -17,6 +17,7 @@ import { Route as ManageIndexImport } from './routes/manage/index'
 import { Route as FavorisIndexImport } from './routes/favoris/index'
 import { Route as AppIndexImport } from './routes/app/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as ManageSpeakerRequestImport } from './routes/manage/speaker-request'
 import { Route as ManageSpeakerImport } from './routes/manage/speaker'
 import { Route as ManageOrganizerImport } from './routes/manage/organizer'
 import { Route as AuthRegisterImport } from './routes/auth/register'
@@ -59,6 +60,12 @@ const AppIndexRoute = AppIndexImport.update({
 const AccountIndexRoute = AccountIndexImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ManageSpeakerRequestRoute = ManageSpeakerRequestImport.update({
+  id: '/manage/speaker-request',
+  path: '/manage/speaker-request',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -158,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManageSpeakerImport
       parentRoute: typeof rootRoute
     }
+    '/manage/speaker-request': {
+      id: '/manage/speaker-request'
+      path: '/manage/speaker-request'
+      fullPath: '/manage/speaker-request'
+      preLoaderRoute: typeof ManageSpeakerRequestImport
+      parentRoute: typeof rootRoute
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -200,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
+  '/manage/speaker-request': typeof ManageSpeakerRequestRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
   '/favoris': typeof FavorisIndexRoute
@@ -215,6 +230,7 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
+  '/manage/speaker-request': typeof ManageSpeakerRequestRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
   '/favoris': typeof FavorisIndexRoute
@@ -231,6 +247,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
+  '/manage/speaker-request': typeof ManageSpeakerRequestRoute
   '/account/': typeof AccountIndexRoute
   '/app/': typeof AppIndexRoute
   '/favoris/': typeof FavorisIndexRoute
@@ -248,6 +265,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/manage/organizer'
     | '/manage/speaker'
+    | '/manage/speaker-request'
     | '/account'
     | '/app'
     | '/favoris'
@@ -262,6 +280,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/manage/organizer'
     | '/manage/speaker'
+    | '/manage/speaker-request'
     | '/account'
     | '/app'
     | '/favoris'
@@ -276,6 +295,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/manage/organizer'
     | '/manage/speaker'
+    | '/manage/speaker-request'
     | '/account/'
     | '/app/'
     | '/favoris/'
@@ -292,6 +312,7 @@ export interface RootRouteChildren {
   AuthRegisterRoute: typeof AuthRegisterRoute
   ManageOrganizerRoute: typeof ManageOrganizerRoute
   ManageSpeakerRoute: typeof ManageSpeakerRoute
+  ManageSpeakerRequestRoute: typeof ManageSpeakerRequestRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AppIndexRoute: typeof AppIndexRoute
   FavorisIndexRoute: typeof FavorisIndexRoute
@@ -307,6 +328,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRegisterRoute: AuthRegisterRoute,
   ManageOrganizerRoute: ManageOrganizerRoute,
   ManageSpeakerRoute: ManageSpeakerRoute,
+  ManageSpeakerRequestRoute: ManageSpeakerRequestRoute,
   AccountIndexRoute: AccountIndexRoute,
   AppIndexRoute: AppIndexRoute,
   FavorisIndexRoute: FavorisIndexRoute,
@@ -331,6 +353,7 @@ export const routeTree = rootRoute
         "/auth/register",
         "/manage/organizer",
         "/manage/speaker",
+        "/manage/speaker-request",
         "/account/",
         "/app/",
         "/favoris/",
@@ -360,6 +383,9 @@ export const routeTree = rootRoute
     },
     "/manage/speaker": {
       "filePath": "manage/speaker.tsx"
+    },
+    "/manage/speaker-request": {
+      "filePath": "manage/speaker-request.tsx"
     },
     "/account/": {
       "filePath": "account/index.tsx"

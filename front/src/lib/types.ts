@@ -17,3 +17,22 @@ export type User = {
   created_at: string;
   updated_at: string;
 };
+
+export interface BecameSpeakerRequest {
+  id: string;
+  user_id: number;
+  phone: string;
+  description: string;
+  status: "open" | "closed";
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    first_name: string;
+    profile_picture: string | null;
+    description: string;
+    role: UserRole;
+  };
+}

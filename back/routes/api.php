@@ -21,6 +21,12 @@ Route::patch('/users/{user}/demote-to-public', [UserController::class, 'demoteTo
 Route::apiResource('speakers-request', SpeakersRequestController::class)
     ->middleware('auth:sanctum');
 
+Route::patch('/speakers-request/{id}/approve', [SpeakersRequestController::class, 'approve'])
+    ->middleware('auth:sanctum');
+
+Route::patch('/speakers-request/{id}/refuse', [SpeakersRequestController::class, 'refuse'])
+    ->middleware('auth:sanctum');
+
 Route::middleware('auth:sanctum')->group(function () {
     // Routes pour les speakers
     Route::post('/talks', [TalkController::class, 'store']);

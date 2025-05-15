@@ -78,11 +78,21 @@ export const Header = ({ className }: HeaderProps) => {
                   </DropdownMenuItem>
                 ) : null}
                 {role === "organizer" || role === "superadmin" ? (
-                  <DropdownMenuItem asChild>
-                    <Link to="/manage" className="cursor-pointer w-full">
-                      Espace gestionnaire
-                    </Link>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/manage" className="cursor-pointer w-full">
+                        Espace gestionnaire
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/manage/speaker-request"
+                        className="cursor-pointer w-full"
+                      >
+                        Demandes de promotion
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 ) : null}
               </DropdownMenuContent>
             </DropdownMenu>

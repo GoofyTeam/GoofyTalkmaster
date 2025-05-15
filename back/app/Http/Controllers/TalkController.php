@@ -327,7 +327,7 @@ class TalkController extends Controller
             }
 
             // Récupérer tous les talks qui pourraient être en conflit
-             $potentialConflicts = Talk::where('room_id', $roomId)
+            $potentialConflicts = Talk::where('room_id', $roomId)
                 ->where('scheduled_date', $scheduledDate)
                 ->where('status', 'scheduled')
                 ->where('id', '!=', $id)
@@ -665,7 +665,7 @@ class TalkController extends Controller
     /**
      * Parse a time string into a Carbon instance, handling both H:i and H:i:s formats
      *
-     * @param string $timeString The time string to parse
+     * @param  string  $timeString  The time string to parse
      * @return \Carbon\Carbon The parsed Carbon instance
      */
     private function parseTime(string $timeString)

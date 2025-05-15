@@ -32,7 +32,9 @@ class SpeakersRequestController extends Controller
     {
         $authUser = $request->user();
         if ($authUser->isPublic() || $authUser->isSpeaker()) {
-            $speakersRequests = SpeakersRequest::where('user_id', $authUser->id)->paginate(15);
+            $speakersRequests = SpeakersRequest::with('user')
+                ->where('user_id', $authUser->id)
+                ->paginate(15);
 
             /**
              * Liste des demandes de l'utilisateur authentifié
@@ -98,7 +100,7 @@ class SpeakersRequestController extends Controller
             'sort_direction' => 'sometimes|in:asc,desc',
         ])->validate();
 
-        $query = SpeakersRequest::query();
+        $query = SpeakersRequest::with('user');
 
         // Filtres
         if ($request->has('status')) {
@@ -359,6 +361,161 @@ class SpeakersRequestController extends Controller
          */
         return response()->json([
             'message' => 'Speakers request deleted successfully',
+        ], 200);
+    }
+
+    /**
+     * Approuver une demande de promotion en tant que Speaker
+     *
+     * Cette méthode permet à un administrateur d'approuver une demande de promotion en tant que Speaker.
+     * L'action est restreinte aux utilisateurs ayant un rôle 'admin'.
+     * Les utilisateurs publics et présentateurs ne peuvent pas approuver les demandes.
+     *
+     * @param  string  $id  L'identifiant de la demande à approuver
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function approve(string $id)
+    {
+        $authUser = request()->user();
+        if ($authUser->isPublic() || $authUser->isSpeaker()) {
+            /**
+             * L'utilisateur n'est pas autorisé à approuver les demandes
+             *
+             * @status 403
+             *
+             * @body {"message": "Unauthorized"}
+             */
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+        $speakersRequest = SpeakersRequest::find($id);
+        if (! $speakersRequest) {
+            /**
+             * La demande spécifiée n'existe pas
+             *
+             * @status 404
+             *
+             * @body {"message": "Speakers request not found"}
+             */
+            return response()->json([
+                'message' => 'Speakers request not found',
+            ], 404);
+        }
+
+        // Vérification du statut de la demande
+        if ($speakersRequest->status !== 'open') {
+            /**
+             * La demande n'est pas ouverte
+             *
+             * @status 400
+             *
+             * @body {"message": "Speakers request is not open"}
+             */
+            return response()->json([
+                'message' => 'Speakers request is not open',
+            ], 400);
+        }
+
+        $requestUser = $speakersRequest->user;
+        if (! $requestUser->isPublic()) {
+            /**
+             * Opération interdite - L'utilisateur n'a pas le rôle requis
+             *
+             * @status 400
+             *
+             * @body {"message": "Only public users can be promoted to speaker"}
+             */
+            return response()->json([
+                'message' => 'Only public users can be promoted to speaker',
+            ], 400);
+        }
+
+        // Mise à jour de l'utilisateur
+        $requestUser->role = 'speaker';
+        $requestUser->save();
+        // Mise à jour de la demande
+        $speakersRequest->status = 'closed';
+        $speakersRequest->save();
+
+        /**
+         * Demande de présentateur approuvée avec succès
+         *
+         * @status 200
+         *
+         * @body {"message": "Speakers request approved successfully"}
+         */
+        return response()->json([
+            'message' => 'Speakers request approved successfully',
+        ], 200);
+    }
+
+    /**
+     * Refuser une demande de promotion en tant que Speaker
+     *
+     * Cette méthode permet à un administrateur de refuser une demande de promotion en tant que Speaker.
+     * L'action est restreinte aux utilisateurs ayant un rôle 'admin'.
+     * Les utilisateurs publics et présentateurs ne peuvent pas refuser les demandes.
+     *
+     * @param  string  $id  L'identifiant de la demande à refuser
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refuse(string $id)
+    {
+        $authUser = request()->user();
+        if ($authUser->isPublic() || $authUser->isSpeaker()) {
+            /**
+             * L'utilisateur n'est pas autorisé à approuver les demandes
+             *
+             * @status 403
+             *
+             * @body {"message": "Unauthorized"}
+             */
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+        $speakersRequest = SpeakersRequest::find($id);
+        if (! $speakersRequest) {
+            /**
+             * La demande spécifiée n'existe pas
+             *
+             * @status 404
+             *
+             * @body {"message": "Speakers request not found"}
+             */
+            return response()->json([
+                'message' => 'Speakers request not found',
+            ], 404);
+        }
+
+        // Verfification du statut de la demande
+        if ($speakersRequest->status !== 'open') {
+            /**
+             * La demande n'est pas ouverte
+             *
+             * @status 400
+             *
+             * @body {"message": "Speakers request is not open"}
+             */
+            return response()->json([
+                'message' => 'Speakers request is not open',
+            ], 400);
+        }
+
+        // Mise à jour de la demande
+        $speakersRequest->status = 'closed';
+        $speakersRequest->save();
+
+        /**
+         * Demande de présentateur refusée avec succès
+         *
+         * @status 200
+         *
+         * @body {"message": "Speakers request refused successfully"}
+         */
+        return response()->json([
+            'message' => 'Speakers request refused successfully',
         ], 200);
     }
 }
