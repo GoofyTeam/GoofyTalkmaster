@@ -34,9 +34,8 @@ export default function NotFoundPage() {
       <div className="w-full flex flex-col items-center mb-auto">
         <button
           type="button"
-          className={`text-7xl md:text-9xl font-bold transition-all duration-300 cursor-pointer select-none bg-transparent border-none
-            ${animateTitle ? "scale-110 rotate-3" : ""}
-            ${showEasterEgg ? "text-primary" : "text-primary"}`}
+          className={`text-7xl md:text-9xl font-bold transition-all duration-300 cursor-pointer select-none bg-transparent border-none text-primary
+            ${animateTitle ? "scale-110 rotate-3" : ""}`}
           onClick={handleInteraction}
           aria-label="Cliquez plusieurs fois pour découvrir un easter egg"
         >
