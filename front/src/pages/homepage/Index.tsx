@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
+import { TalkCard } from "@/components/Talk";
 import { TalkFilters } from "@/components/TalkFilters";
 import type { Filters } from "@/components/TalkFilters";
-import { TalkCard } from "@/components/Talk";
-import type { Talk } from "@/types/talk";
-import { API_BASE_URL } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { API_BASE_URL } from "@/lib/utils";
+import type { Talk } from "@/types/talk";
+import { useEffect, useState } from "react";
 
 export default function Homepage() {
   const [talks, setTalks] = useState<Talk[]>([]);
@@ -45,12 +45,13 @@ export default function Homepage() {
 
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
-        { headers: { Accept: "application/json" } }
+        { headers: { Accept: "application/json" } },
       );
       if (!res.ok) throw new Error("Erreur fetching talks");
 
       const payload = await res.json();
 
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       let data = (payload.data ?? payload) as any[];
 
       if (fSearch) {
@@ -58,7 +59,7 @@ export default function Homepage() {
         data = data.filter(
           (t) =>
             t.title.toLowerCase().includes(q) ||
-            t.topic.toLowerCase().includes(q)
+            t.topic.toLowerCase().includes(q),
         );
       }
       if (fSubject) {
@@ -71,7 +72,7 @@ export default function Homepage() {
         data = data.filter(
           (t) =>
             typeof t.scheduled_date === "string" &&
-            t.scheduled_date.startsWith(fDate)
+            t.scheduled_date.startsWith(fDate),
         );
       }
       if (fLevel) {
@@ -96,6 +97,7 @@ export default function Homepage() {
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     fetchTalks();
   }, [filters]);
