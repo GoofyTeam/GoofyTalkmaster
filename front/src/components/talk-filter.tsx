@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LEVELS, SALLES, STATUS } from "@/lib/utils";
 import { Route } from "@/routes/app/index";
 import { useLocation } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Search, Calendar as CalendarIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { SALLES, LEVELS, STATUS } from "@/lib/utils";
+import { Calendar as CalendarIcon, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function TalkFilters() {
   const navigate = Route.useNavigate();
@@ -34,7 +34,7 @@ export function TalkFilters() {
   const statusParam = query.get("status") ?? "all";
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    dateParam ? new Date(dateParam) : undefined
+    dateParam ? new Date(dateParam) : undefined,
   );
   useEffect(() => {
     setSelectedDate(dateParam ? new Date(dateParam) : undefined);
