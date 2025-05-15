@@ -1,5 +1,6 @@
 import type { AuthContextType } from "@/auth/useAuth";
 import { MainLayout } from "@/components/custom/layout";
+import NotFoundPage from "@/pages/NotFound";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import {
   Outlet,
@@ -56,7 +57,7 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
         />
         <meta
           property="og:description"
-          content="Proposez, planifiez et consultez les talks d’un événement tech en toute simplicité. Une plateforme pensée pour les conférenciers, les organisateurs et le public."
+          content="Proposez, planifiez et consultez les talks d'un événement tech en toute simplicité. Une plateforme pensée pour les conférenciers, les organisateurs et le public."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://talkmaster.stroyco.eu" />
@@ -72,7 +73,7 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
         />
         <meta
           name="twitter:description"
-          content="Une plateforme fluide et moderne pour gérer les talks d’un événement tech : soumission, planning, favoris et plus encore."
+          content="Une plateforme fluide et moderne pour gérer les talks d'un événement tech : soumission, planning, favoris et plus encore."
         />
         <meta
           name="twitter:image"
@@ -85,4 +86,5 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
       <TanStackRouterDevtools />
     </>
   ),
+  notFoundComponent: () => <NotFoundPage />,
 });
