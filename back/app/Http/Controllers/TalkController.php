@@ -337,16 +337,9 @@ class TalkController extends Controller
 
             // Vérifier les conflits
             foreach ($potentialConflicts as $otherTalk) {
-                // Vérifier le format de l'heure et utiliser le bon format pour la conversion
-                if (strpos($otherTalk->start_time, ':') !== strrpos($otherTalk->start_time, ':')) {
-                    // Format avec secondes détecté (H:i:s)
-                    $otherStart = Carbon::createFromFormat('H:i:s', $otherTalk->start_time);
-                    $otherEnd = Carbon::createFromFormat('H:i:s', $otherTalk->end_time);
-                } else {
-                    // Format sans secondes (H:i)
-                    $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
-                    $otherEnd = Carbon::createFromFormat('H:i', $otherTalk->end_time);
-                }
+                // Parse time strings into Carbon objects using the helper method
+                $otherStart = $this->parseTime($otherTalk->start_time);
+                $otherEnd = $this->parseTime($otherTalk->end_time);
 
                 if ($startTimeObj < $otherEnd && $endTimeObj > $otherStart) {
                     /**
@@ -667,5 +660,23 @@ class TalkController extends Controller
          * @status 200
          */
         return response()->json($query->with('speaker')->paginate($request->input('per_page', 15)));
+    }
+
+    /**
+     * Parse a time string into a Carbon instance, handling both H:i and H:i:s formats
+     *
+     * @param string $timeString The time string to parse
+     * @return \Carbon\Carbon The parsed Carbon instance
+     */
+    private function parseTime(string $timeString)
+    {
+        // Check if the time string contains seconds (has more than one colon)
+        if (strpos($timeString, ':') !== strrpos($timeString, ':')) {
+            // Format with seconds (H:i:s)
+            return Carbon::createFromFormat('H:i:s', $timeString);
+        } else {
+            // Format without seconds (H:i)
+            return Carbon::createFromFormat('H:i', $timeString);
+        }
     }
 }

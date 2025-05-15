@@ -61,6 +61,16 @@ const AVAILABLE_DURATIONS = [
   { label: "2 heures", value: 120 },
 ];
 
+/**
+ * Convertit une chaîne d'heure HH:MM en objet Date pour comparaison
+ */
+const parseTimeToDate = (timeString: string): Date => {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
+
 export function TalkValidationDialog({
   talk,
   open,
@@ -142,14 +152,19 @@ export function TalkValidationDialog({
         return;
       }
 
+      // Convertir les heures en objets Date pour des comparaisons plus robustes
+      const startTimeDate = parseTimeToDate(startTime);
+      const endTimeDate = parseTimeToDate(endTime);
+
       // Vérifier que l'heure de fin est après l'heure de début
-      if (startTime >= endTime) {
+      if (startTimeDate >= endTimeDate) {
         toast.error("L'heure de fin doit être après l'heure de début");
         return;
       }
 
       // Vérifier que l'heure de fin est avant 20h00 (ajusté selon votre besoin)
-      if (endTime > "20:00") {
+      const maxEndTimeDate = parseTimeToDate("20:00");
+      if (endTimeDate > maxEndTimeDate) {
         toast.error("L'heure de fin ne peut pas dépasser 20h00");
         return;
       }
