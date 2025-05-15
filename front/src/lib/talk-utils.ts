@@ -11,6 +11,8 @@ export const getStatusLabel = (status: string | undefined) => {
       return "Accepté";
     case "rejected":
       return "Refusé";
+    case "scheduled":
+      return "Programmé";
     default:
       return "";
   }
@@ -27,6 +29,8 @@ export const getStatusClass = (status: string | undefined) => {
       return "bg-green-500 text-green-50";
     case "rejected":
       return "bg-red-500 text-red-50";
+    case "scheduled":
+      return "bg-blue-500 text-blue-50";
     default:
       return "bg-primary text-primary-foreground";
   }

@@ -19,10 +19,39 @@ import { cn } from "@/lib/utils";
 import type { Talk } from "@/types/talk";
 
 export function eventMapper(event: Talk): Event {
+  // Sortir rapidement si les données nécessaires ne sont pas présentes
+  if (!event.scheduledDate || !event.startTime) {
+    return {
+      title: `${event.title} (Non programmé)`,
+      start: new Date(),
+      end: new Date(),
+    };
+  }
+
+  // Construire une date correcte en combinant la date programmée et l'heure de début
+  const startDateTime = `${event.scheduledDate}T${event.startTime}`;
+  const startDate = new Date(startDateTime);
+
+  // Créer une date de fin en ajoutant 1h30 par défaut si endTime n'est pas disponible
+  let endDate: Date;
+  if (event.endTime) {
+    const endDateTime = `${event.scheduledDate}T${event.endTime}`;
+    endDate = new Date(endDateTime);
+  } else {
+    endDate = new Date(startDate);
+    endDate.setMinutes(endDate.getMinutes() + 90); // Par défaut, 1h30 de durée
+  }
+
+  // Ajouter des informations supplémentaires au titre
+  const speaker =
+    event.speaker?.name || `Speaker ${event.speaker?.id || "inconnu"}`;
+  const location = event.room ? ` - Salle: ${event.room}` : "";
+
   return {
-    title: `${event.title} - ${event.speaker.id}`,
-    start: new Date(event.startTime || ""),
-    end: new Date(event.startTime || ""),
+    title: `${event.title} - ${speaker}${location}`,
+    start: startDate,
+    end: endDate,
+    resource: event, // Stocker l'objet talk complet pour référence
   };
 }
 
@@ -48,6 +77,14 @@ maxTime.setHours(19, 0, 0);
 const UserPlanning = ({ talks }: { talks: Talk[] }) => {
   const localizer = momentLocalizer(moment);
 
+  // Filtrer les talks qui ont des dates et heures valides
+  const validTalks = talks.filter(
+    (talk) => talk.scheduledDate && talk.startTime,
+  );
+
+  // Mapper les talks en événements pour le calendrier
+  const events = validTalks.map((talk) => eventMapper(talk));
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -60,7 +97,7 @@ const UserPlanning = ({ talks }: { talks: Talk[] }) => {
       <CardContent className="">
         <Calendar
           localizer={localizer}
-          events={talks.map(eventMapper)}
+          events={events}
           startAccessor="start"
           endAccessor="end"
           min={minTime}

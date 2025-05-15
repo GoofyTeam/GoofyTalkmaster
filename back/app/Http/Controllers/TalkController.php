@@ -327,16 +327,26 @@ class TalkController extends Controller
             }
 
             // Récupérer tous les talks qui pourraient être en conflit
-            $potentialConflicts = Talk::where('room_id', $roomId)
+             $potentialConflicts = Talk::where('room_id', $roomId)
                 ->where('scheduled_date', $scheduledDate)
                 ->where('status', 'scheduled')
-                ->where('id', '!=', $id) // Exclure le talk actuel pour permettre sa mise à jour
+                ->where('id', '!=', $id)
+                ->where('start_time', '!=', null)
+                ->where('end_time', '!=', null)
                 ->get();
 
             // Vérifier les conflits
             foreach ($potentialConflicts as $otherTalk) {
-                $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
-                $otherEnd = Carbon::createFromFormat('H:i', $otherTalk->end_time);
+                // Vérifier le format de l'heure et utiliser le bon format pour la conversion
+                if (strpos($otherTalk->start_time, ':') !== strrpos($otherTalk->start_time, ':')) {
+                    // Format avec secondes détecté (H:i:s)
+                    $otherStart = Carbon::createFromFormat('H:i:s', $otherTalk->start_time);
+                    $otherEnd = Carbon::createFromFormat('H:i:s', $otherTalk->end_time);
+                } else {
+                    // Format sans secondes (H:i)
+                    $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
+                    $otherEnd = Carbon::createFromFormat('H:i', $otherTalk->end_time);
+                }
 
                 if ($startTimeObj < $otherEnd && $endTimeObj > $otherStart) {
                     /**
