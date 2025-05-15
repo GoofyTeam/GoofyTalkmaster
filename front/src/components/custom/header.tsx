@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { ModeToggle } from "../mode-toggle";
 
 interface HeaderProps {
   className?: string;
@@ -86,6 +87,7 @@ export const Header = ({ className }: HeaderProps) => {
               Connexion
             </Link>
           )}
+          <ModeToggle />
         </nav>
       </div>
     </header>

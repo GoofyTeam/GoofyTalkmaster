@@ -1,8 +1,17 @@
 import { useAuth } from "@/auth/useAuth";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/utils";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 function Login() {
@@ -72,55 +81,70 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow">
-        <h1 className="text-2xl font-bold text-center">Page de connexion</h1>
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">
-              Adresse Mail
-            </p>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Entrez votre email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <p className="block text-sm font-medium text-gray-700">
-              Mot de passe
-            </p>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Entrez votre mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="text-right">
-              <Link
-                to="/auth/forgot-password"
-                className="text-sm underline cursor-pointer"
-              >
-                Mot de passe oublié ?
-              </Link>
-            </div>
-          </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          <Button type="submit" className="w-full cursor-pointer">
-            Se connecter
-          </Button>
-          <div className="text-center">
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <Card>
+          <CardHeader>
             <Link
-              to="/auth/register"
-              className="text-sm underline cursor-pointer"
+              to="/"
+              className="flex items-center gap-2 text-sm hover:underline"
             >
-              Vous n'avez pas de compte ?
+              <ArrowLeft size={16} /> Retour à l'accueil
             </Link>
-          </div>
-        </form>
+            <CardTitle className="text-2xl">Connectez-vous</CardTitle>
+            <CardDescription>Rejoignez-nos talks !</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleLogin}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Entrez votre email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Mot de passe</Label>
+                    <div className="text-right">
+                      <Link
+                        to="/auth/forgot-password"
+                        className="text-sm underline cursor-pointer"
+                      >
+                        Mot de passe oublié ?
+                      </Link>
+                    </div>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Entrez votre mot de passe"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                {error && (
+                  <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
+                <Button type="submit" className="w-full cursor-pointer">
+                  Se connecter
+                </Button>
+              </div>
+              <div className="text-center">
+                <Link
+                  to="/auth/register"
+                  className="text-sm underline cursor-pointer"
+                >
+                  Vous n'avez pas de compte ?
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

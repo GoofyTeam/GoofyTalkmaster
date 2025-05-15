@@ -8,6 +8,7 @@ import { routeTree } from "./routeTree.gen";
 import "./assets/styles/styles.css";
 import InnerApp from "./App.tsx";
 import { AuthProvider } from "./auth/context.tsx";
+import { ThemeProvider } from "./components/theme-provider.tsx";
 import reportWebVitals from "./reportWebVitals.ts";
 
 export const router = createRouter({
@@ -43,9 +44,11 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <AuthProvider>
-        <InnerApp />
-      </AuthProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="tlkmstr-theme">
+        <AuthProvider>
+          <InnerApp />
+        </AuthProvider>
+      </ThemeProvider>
     </StrictMode>,
   );
 }

@@ -1,5 +1,6 @@
 import { Header } from "@/components/custom/header";
 import { cn } from "@/lib/utils";
+import { useMatchRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 interface LayoutProps {
@@ -8,10 +9,16 @@ interface LayoutProps {
 }
 
 export const MainLayout = ({ children, className }: LayoutProps) => {
+  const matchRoute = useMatchRoute();
+  const isForgot = matchRoute({ to: "/auth/forgot-password" });
+  const isLogin = matchRoute({ to: "/auth/login" });
+  const isRegister = matchRoute({ to: "/auth/register" });
+  const displayHeader = !isForgot && !isLogin && !isRegister;
+
   return (
-    <div className={cn("flex min-h-screen flex-col", className)}>
-      <Header />
-      <main className="flex-1 p-6">{children}</main>
+    <div className={cn("min-h-screen", className)}>
+      {displayHeader ? <Header /> : null}
+      <main>{children}</main>
     </div>
   );
 };
