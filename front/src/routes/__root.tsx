@@ -25,15 +25,20 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
     const isAuthPage = location.pathname.startsWith("/auth");
     const isManagePage = location.pathname.startsWith("/manage");
 
-    if (!isLoggedIn && !isAuthPage) {
+    if (!isLoggedIn && !isAuthPage && location.pathname !== "/app") {
       throw redirect({ to: "/auth/login" });
     }
 
-    if (isLoggedIn && isAuthPage) {
+    if (isLoggedIn && isAuthPage && location.pathname !== "/app") {
       throw redirect({ to: "/app" });
     }
 
-    if (isLoggedIn && userRole === "public" && isManagePage) {
+    if (
+      isLoggedIn &&
+      userRole === "public" &&
+      isManagePage &&
+      location.pathname !== "/app"
+    ) {
       throw redirect({ to: "/app" });
     }
   },
