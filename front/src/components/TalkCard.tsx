@@ -127,6 +127,8 @@ export function TalkCard({
     }
   };
 
+  console.log(talk.status);
+
   const handleKeyDown = (e: KeyboardEvent) => {
     if (onClick && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
