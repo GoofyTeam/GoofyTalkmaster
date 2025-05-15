@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -37,6 +38,7 @@ const askTalkSchema = z.object({
 });
 
 const AskNewTalk = () => {
+  const router = useRouter();
   const askTalkForm = useForm<z.infer<typeof askTalkSchema>>({
     resolver: zodResolver(askTalkSchema),
     defaultValues: {
@@ -85,6 +87,8 @@ const AskNewTalk = () => {
     }
 
     toast("Votre proposition de talk a été envoyée avec succès !");
+
+    router.invalidate();
   };
   return (
     <Card className="w-full">
