@@ -45,7 +45,12 @@ export const mapApiTalkToTalk = (apiTalk: ApiTalk): Talk => ({
     name: apiTalk.speaker ? apiTalk.speaker.name : "Inconnu",
     email: apiTalk.speaker?.email,
   },
-  status: apiTalk.status as "pending" | "accepted" | "rejected" | undefined,
+  status: apiTalk.status as
+    | "pending"
+    | "accepted"
+    | "rejected"
+    | "scheduled"
+    | undefined,
   scheduledDate: apiTalk.scheduled_date,
   startTime: apiTalk.start_time,
   room: apiTalk.room,

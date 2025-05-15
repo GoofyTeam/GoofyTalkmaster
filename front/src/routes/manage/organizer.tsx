@@ -1,7 +1,11 @@
-import { type ApiTalk, mapApiTalkToPendingTalk } from "@/lib/mappers";
+import {
+  type ApiTalk,
+  mapApiTalkToPendingTalk,
+  mapApiTalkToTalk,
+} from "@/lib/mappers";
 import { API_BASE_URL } from "@/lib/utils";
 import OrganizerPage from "@/pages/manage/organizer/Index";
-import type { PendingTalk } from "@/types/talk";
+import type { PendingTalk, Talk } from "@/types/talk";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 // Définir le type pour la route
@@ -44,7 +48,8 @@ export const Route = createFileRoute("/manage/organizer")({
         throw new Error("Impossible de récupérer le token CSRF");
       }
 
-      const response = await fetch(
+      // Préparation des requêtes pour les exécuter en parallèle
+      const fetchPendingTalks = fetch(
         `${API_BASE_URL}/api/talks?status=pending&sort_by=created_at&sort_direction=desc&per_page=50`,
         {
           method: "GET",
@@ -57,43 +62,84 @@ export const Route = createFileRoute("/manage/organizer")({
         },
       );
 
+      const fetchAllTalks = fetch(`${API_BASE_URL}/api/talks?per_page=100`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+        },
+        credentials: "include",
+      });
+
+      // Exécution des requêtes en parallèle
+      const [pendingResponse, allTalksResponse] = await Promise.all([
+        fetchPendingTalks,
+        fetchAllTalks,
+      ]);
+
       // Si l'utilisateur n'est pas autorisé (401) ou la session a expiré
-      if (response.status === 401) {
+      if (pendingResponse.status === 401 || allTalksResponse.status === 401) {
         console.error("Session expirée ou non autorisé");
         throw redirect({ to: "/auth/login" });
       }
 
       // Si la ressource n'est pas trouvée (404)
-      if (response.status === 404) {
+      if (pendingResponse.status === 404 || allTalksResponse.status === 404) {
         console.error("Ressource non trouvée");
         throw notFound();
       }
 
       // Pour toute autre erreur
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!pendingResponse.ok || !allTalksResponse.ok) {
+        const errorData = await (pendingResponse.ok
+          ? allTalksResponse
+          : pendingResponse
+        ).json();
         console.error(
-          `Erreur ${response.status}: ${response.statusText}`,
+          `Erreur ${pendingResponse.status}: ${pendingResponse.statusText}`,
           errorData,
         );
         throw notFound();
       }
 
-      const data = await response.json();
+      // Traitement des réponses en parallèle
+      const [pendingData, allTalksData] = await Promise.all([
+        pendingResponse.json(),
+        allTalksResponse.json(),
+      ]);
 
       // Transformation des données de l'API au format PendingTalk
-      const pendingTalks: PendingTalk[] = data.data.map((apiTalk: ApiTalk) =>
-        mapApiTalkToPendingTalk(apiTalk),
+      const pendingTalks: PendingTalk[] = pendingData.data.map(
+        (apiTalk: ApiTalk) => mapApiTalkToPendingTalk(apiTalk),
+      );
+
+      // Transformation de tous les talks
+      const allTalks: Talk[] = allTalksData.data.map((apiTalk: ApiTalk) =>
+        mapApiTalkToTalk(apiTalk),
+      );
+
+      // Filtrer uniquement les talks programmés (scheduled)
+      const onlyAcceptedTalks = allTalks.filter(
+        (talk) => talk.status === "scheduled",
+      );
+
+      // Log pour debug
+      console.log(
+        `Tous les talks: ${allTalks.length}, Talks programmés: ${onlyAcceptedTalks.length}`,
       );
 
       return {
         pendingTalks,
+        allTalks,
+        onlyAcceptedTalks,
         pagination: {
           currentPage: pageNumber,
-          totalPages: Math.ceil(data.meta?.total / itemsPerPage) || 1,
-          totalItems: data.meta?.total || pendingTalks.length,
-          hasNextPage: data.meta?.current_page < data.meta?.last_page,
-          hasPreviousPage: data.meta?.current_page > 1,
+          totalPages: Math.ceil(pendingData.meta?.total / itemsPerPage) || 1,
+          totalItems: pendingData.meta?.total || pendingTalks.length,
+          hasNextPage:
+            pendingData.meta?.current_page < pendingData.meta?.last_page,
+          hasPreviousPage: pendingData.meta?.current_page > 1,
           itemsPerPage,
         },
       };

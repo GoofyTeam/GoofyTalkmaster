@@ -5,7 +5,7 @@ import UserPlanning from "@/components/user-planning";
 import { useLoaderData } from "@tanstack/react-router";
 
 function Speaker() {
-  const { onlyAcceptedTalks } = useLoaderData({
+  const { onlyAcceptedTalks: scheduledTalks } = useLoaderData({
     from: "/manage/speaker",
   });
 
@@ -15,7 +15,7 @@ function Speaker() {
         <AskNewTalk />
         <TalksList />
       </div>
-      <UserPlanning talks={onlyAcceptedTalks} />
+      <UserPlanning talks={scheduledTalks} />
     </div>
   );
 }

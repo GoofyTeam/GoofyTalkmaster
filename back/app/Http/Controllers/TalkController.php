@@ -327,16 +327,19 @@ class TalkController extends Controller
             }
 
             // Récupérer tous les talks qui pourraient être en conflit
-            $potentialConflicts = Talk::where('room_id', $roomId)
+             $potentialConflicts = Talk::where('room_id', $roomId)
                 ->where('scheduled_date', $scheduledDate)
                 ->where('status', 'scheduled')
-                ->where('id', '!=', $id) // Exclure le talk actuel pour permettre sa mise à jour
+                ->where('id', '!=', $id)
+                ->where('start_time', '!=', null)
+                ->where('end_time', '!=', null)
                 ->get();
 
             // Vérifier les conflits
             foreach ($potentialConflicts as $otherTalk) {
-                $otherStart = Carbon::createFromFormat('H:i', $otherTalk->start_time);
-                $otherEnd = Carbon::createFromFormat('H:i', $otherTalk->end_time);
+                // Parse time strings into Carbon objects using the helper method
+                $otherStart = $this->parseTime($otherTalk->start_time);
+                $otherEnd = $this->parseTime($otherTalk->end_time);
 
                 if ($startTimeObj < $otherEnd && $endTimeObj > $otherStart) {
                     /**
@@ -657,5 +660,23 @@ class TalkController extends Controller
          * @status 200
          */
         return response()->json($query->with('speaker')->paginate($request->input('per_page', 15)));
+    }
+
+    /**
+     * Parse a time string into a Carbon instance, handling both H:i and H:i:s formats
+     *
+     * @param string $timeString The time string to parse
+     * @return \Carbon\Carbon The parsed Carbon instance
+     */
+    private function parseTime(string $timeString)
+    {
+        // Check if the time string contains seconds (has more than one colon)
+        if (strpos($timeString, ':') !== strrpos($timeString, ':')) {
+            // Format with seconds (H:i:s)
+            return Carbon::createFromFormat('H:i:s', $timeString);
+        } else {
+            // Format without seconds (H:i)
+            return Carbon::createFromFormat('H:i', $timeString);
+        }
     }
 }
