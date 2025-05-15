@@ -47,7 +47,7 @@ class TalkController extends Controller
         $sortDirection = $request->input('sort_direction', 'desc');
         $query->orderBy($sortBy, $sortDirection);
 
-        return response()->json($query->paginate($request->input('per_page', 15)->with('speaker')));
+        return response()->json($query->with('speaker')->paginate($request->input('per_page', 15)));
     }
 
     /**
@@ -88,11 +88,13 @@ class TalkController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $talk = Talk::find($id)->load('speaker');
+        $talk = Talk::find($id);
 
         if (! $talk) {
             return response()->json(['message' => 'Talk not found'], 404);
         }
+
+        $talk->load('speaker');
 
         $user = $request->user();
 

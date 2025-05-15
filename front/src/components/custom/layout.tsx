@@ -1,4 +1,5 @@
 import { Header } from "@/components/custom/header";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { useMatchRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -19,6 +20,7 @@ export const MainLayout = ({ children, className }: LayoutProps) => {
     <div className={cn("min-h-screen", className)}>
       {displayHeader ? <Header /> : null}
       <main>{children}</main>
+      <Toaster />
     </div>
   );
 };

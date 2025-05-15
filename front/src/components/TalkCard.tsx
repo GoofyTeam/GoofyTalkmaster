@@ -27,6 +27,10 @@ export type Talk = {
   speaker: {
     id: number;
     name: string;
+    email: string;
+    email_verified_at: string;
+    created_at: string;
+    updated_at: string;
   };
   status?: "pending" | "accepted" | "rejected";
   scheduledDate?: string;
@@ -43,6 +47,10 @@ export type PendingTalk = {
   speaker: {
     id: number;
     name: string;
+    email: string;
+    email_verified_at: string;
+    created_at: string;
+    updated_at: string;
   };
 };
 
