@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Room;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TalkFactory extends Factory
@@ -28,12 +29,12 @@ class TalkFactory extends Factory
             'title' => $this->faker->sentence(6),
             'subject' => $this->faker->randomElement($subjects),
             'description' => $this->faker->paragraphs(3, true),
-            'duration_minutes' => $this->faker->randomElement([30, 45, 60, 90]),
             'level' => $this->faker->randomElement($levels),
             'status' => $this->faker->randomElement($statuses),
             'speaker_id' => $speakerId,
             'scheduled_date' => null,
             'start_time' => null,
+            'end_time' => null,
             'room_id' => null,
         ];
     }
@@ -49,10 +50,16 @@ class TalkFactory extends Factory
             : Room::factory()->create()->id;
 
         return $this->state(function (array $attributes) use ($roomId) {
+            $startTime = $this->faker->dateTimeBetween('09:00', '18:00')->format('H:i');
+            $endTime = Carbon::createFromFormat('H:i', $startTime)
+                ->addMinutes($this->faker->randomElement([30, 45, 60, 90]))
+                ->format('H:i');
+
             return [
                 'status' => 'scheduled',
                 'scheduled_date' => $this->faker->date('Y-m-d'),
-                'start_time' => $this->faker->time('H:i'),
+                'start_time' => $startTime,
+                'end_time' => $endTime,
                 'room_id' => $roomId,
             ];
         });
@@ -68,6 +75,7 @@ class TalkFactory extends Factory
                 'status' => 'pending',
                 'scheduled_date' => null,
                 'start_time' => null,
+                'end_time' => null,
                 'room_id' => null,
             ];
         });
@@ -83,6 +91,7 @@ class TalkFactory extends Factory
                 'status' => 'accepted',
                 'scheduled_date' => null,
                 'start_time' => null,
+                'end_time' => null,
                 'room_id' => null,
             ];
         });
