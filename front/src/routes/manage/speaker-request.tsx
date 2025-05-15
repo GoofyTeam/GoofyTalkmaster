@@ -1,9 +1,10 @@
 import type { BecameSpeakerRequest } from "@/lib/types";
 import { API_BASE_URL } from "@/lib/utils";
-import BecomeSpeaker from "@/pages/account/BecomeSpeaker";
+import NotFoundPage from "@/pages/NotFound";
+import SpeakerRequest from "@/pages/manage/SpeakerRequest";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/account/become-speaker")({
+export const Route = createFileRoute("/manage/speaker-request")({
   beforeLoad: async ({ context }) => {
     const userData = await context.auth.fetchUser();
     const isLoggedIn = !!userData;
@@ -12,14 +13,18 @@ export const Route = createFileRoute("/account/become-speaker")({
     if (!isLoggedIn) {
       throw redirect({ to: "/auth/login" });
     }
-    if (userRole !== "public") {
+    if (userRole !== "organizer" && userRole !== "superadmin") {
       throw redirect({ to: "/app" });
     }
   },
   loader: async () => {
-    const requestCall = await fetch(`${API_BASE_URL}/api/speakers-request`, {
-      credentials: "include",
-    });
+    console.log("SpeakerRequest loader");
+    const requestCall = await fetch(
+      `${API_BASE_URL}/api/speakers-request?status=open`,
+      {
+        credentials: "include",
+      },
+    );
     if (!requestCall.ok) {
       throw notFound();
     }
@@ -35,5 +40,9 @@ export const Route = createFileRoute("/account/become-speaker")({
       numberOfRequests: talksData.total,
     };
   },
-  component: BecomeSpeaker,
+  component: SpeakerRequest,
+  errorComponent: NotFoundPage,
+  notFoundComponent: NotFoundPage,
+  gcTime: 0,
+  shouldReload: false,
 });
