@@ -18,6 +18,7 @@ import { Route as FavorisIndexImport } from './routes/favoris/index'
 import { Route as AppIndexImport } from './routes/app/index'
 import { Route as AccountIndexImport } from './routes/account/index'
 import { Route as ManageSpeakerImport } from './routes/manage/speaker'
+import { Route as ManageOrganizerImport } from './routes/manage/organizer'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password'
@@ -63,6 +64,12 @@ const AccountIndexRoute = AccountIndexImport.update({
 const ManageSpeakerRoute = ManageSpeakerImport.update({
   id: '/manage/speaker',
   path: '/manage/speaker',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ManageOrganizerRoute = ManageOrganizerImport.update({
+  id: '/manage/organizer',
+  path: '/manage/organizer',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -123,6 +130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterImport
       parentRoute: typeof rootRoute
     }
+    '/manage/organizer': {
+      id: '/manage/organizer'
+      path: '/manage/organizer'
+      fullPath: '/manage/organizer'
+      preLoaderRoute: typeof ManageOrganizerImport
+      parentRoute: typeof rootRoute
+    }
     '/manage/speaker': {
       id: '/manage/speaker'
       path: '/manage/speaker'
@@ -169,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
@@ -182,6 +197,7 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
@@ -196,6 +212,7 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/organizer': typeof ManageOrganizerRoute
   '/manage/speaker': typeof ManageSpeakerRoute
   '/account/': typeof AccountIndexRoute
   '/app/': typeof AppIndexRoute
@@ -211,6 +228,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/organizer'
     | '/manage/speaker'
     | '/account'
     | '/app'
@@ -223,6 +241,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/organizer'
     | '/manage/speaker'
     | '/account'
     | '/app'
@@ -235,6 +254,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/organizer'
     | '/manage/speaker'
     | '/account/'
     | '/app/'
@@ -249,6 +269,7 @@ export interface RootRouteChildren {
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  ManageOrganizerRoute: typeof ManageOrganizerRoute
   ManageSpeakerRoute: typeof ManageSpeakerRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -262,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  ManageOrganizerRoute: ManageOrganizerRoute,
   ManageSpeakerRoute: ManageSpeakerRoute,
   AccountIndexRoute: AccountIndexRoute,
   AppIndexRoute: AppIndexRoute,
@@ -284,6 +306,7 @@ export const routeTree = rootRoute
         "/auth/forgot-password",
         "/auth/login",
         "/auth/register",
+        "/manage/organizer",
         "/manage/speaker",
         "/account/",
         "/app/",
@@ -305,6 +328,9 @@ export const routeTree = rootRoute
     },
     "/auth/register": {
       "filePath": "auth/register.tsx"
+    },
+    "/manage/organizer": {
+      "filePath": "manage/organizer.tsx"
     },
     "/manage/speaker": {
       "filePath": "manage/speaker.tsx"

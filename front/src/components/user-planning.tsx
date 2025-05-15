@@ -16,7 +16,7 @@ import {
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { cn } from "@/lib/utils";
-import type { Talk } from "./TalkCard";
+import type { Talk } from "@/types/talk";
 
 export function eventMapper(event: Talk): Event {
   return {
@@ -32,7 +32,7 @@ function CustomToolbar({ label = "Votre planning" }) {
       {/* Titre du mois/année */}
       <span className="rbc-toolbar-label">{label}</span>
 
-      {/* Ici, on n’inclut aucun bouton Today/Prev/Next */}
+      {/* Ici, on n'inclut aucun bouton Today/Prev/Next */}
       <span className={cn("rbc-btn-group", "my-custom-toolbar")}>
         {/* Par exemple, un bouton perso ou vide */}
       </span>
