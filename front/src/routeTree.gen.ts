@@ -17,6 +17,7 @@ import { Route as ManageIndexImport } from './routes/manage/index'
 import { Route as FavorisIndexImport } from './routes/favoris/index'
 import { Route as AppIndexImport } from './routes/app/index'
 import { Route as AccountIndexImport } from './routes/account/index'
+import { Route as ManageSpeakerImport } from './routes/manage/speaker'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password'
@@ -56,6 +57,12 @@ const AppIndexRoute = AppIndexImport.update({
 const AccountIndexRoute = AccountIndexImport.update({
   id: '/account/',
   path: '/account/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ManageSpeakerRoute = ManageSpeakerImport.update({
+  id: '/manage/speaker',
+  path: '/manage/speaker',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -116,6 +123,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRegisterImport
       parentRoute: typeof rootRoute
     }
+    '/manage/speaker': {
+      id: '/manage/speaker'
+      path: '/manage/speaker'
+      fullPath: '/manage/speaker'
+      preLoaderRoute: typeof ManageSpeakerImport
+      parentRoute: typeof rootRoute
+    }
     '/account/': {
       id: '/account/'
       path: '/account'
@@ -155,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/speaker': typeof ManageSpeakerRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
   '/favoris': typeof FavorisIndexRoute
@@ -167,6 +182,7 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/speaker': typeof ManageSpeakerRoute
   '/account': typeof AccountIndexRoute
   '/app': typeof AppIndexRoute
   '/favoris': typeof FavorisIndexRoute
@@ -180,6 +196,7 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/manage/speaker': typeof ManageSpeakerRoute
   '/account/': typeof AccountIndexRoute
   '/app/': typeof AppIndexRoute
   '/favoris/': typeof FavorisIndexRoute
@@ -194,6 +211,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/speaker'
     | '/account'
     | '/app'
     | '/favoris'
@@ -205,6 +223,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/speaker'
     | '/account'
     | '/app'
     | '/favoris'
@@ -216,6 +235,7 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
+    | '/manage/speaker'
     | '/account/'
     | '/app/'
     | '/favoris/'
@@ -229,6 +249,7 @@ export interface RootRouteChildren {
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  ManageSpeakerRoute: typeof ManageSpeakerRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AppIndexRoute: typeof AppIndexRoute
   FavorisIndexRoute: typeof FavorisIndexRoute
@@ -241,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  ManageSpeakerRoute: ManageSpeakerRoute,
   AccountIndexRoute: AccountIndexRoute,
   AppIndexRoute: AppIndexRoute,
   FavorisIndexRoute: FavorisIndexRoute,
@@ -262,6 +284,7 @@ export const routeTree = rootRoute
         "/auth/forgot-password",
         "/auth/login",
         "/auth/register",
+        "/manage/speaker",
         "/account/",
         "/app/",
         "/favoris/",
@@ -282,6 +305,9 @@ export const routeTree = rootRoute
     },
     "/auth/register": {
       "filePath": "auth/register.tsx"
+    },
+    "/manage/speaker": {
+      "filePath": "manage/speaker.tsx"
     },
     "/account/": {
       "filePath": "account/index.tsx"
