@@ -61,7 +61,10 @@ export const Header = ({ className }: HeaderProps) => {
                 <DropdownMenuSeparator />
                 {role === "public" ? (
                   <DropdownMenuItem asChild>
-                    <Link to="/app" className="cursor-pointer w-full">
+                    <Link
+                      to="/account/become-speaker"
+                      className="cursor-pointer w-full"
+                    >
                       Devenir conférencier
                     </Link>
                   </DropdownMenuItem>

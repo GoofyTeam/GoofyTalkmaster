@@ -1,5 +1,5 @@
 import { useAuth } from "@/auth/useAuth";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,6 @@ function AccountPage() {
   const [profileSuccess, setProfileSuccess] = React.useState("");
   const [passwordError, setPasswordError] = React.useState("");
   const [passwordSuccess, setPasswordSuccess] = React.useState("");
-  const [accountError, setAccountError] = React.useState("");
-  const [accountSuccess, setAccountSuccess] = React.useState("");
 
   const [isSaving, setIsSaving] = React.useState(false);
   const [showPasswords, setShowPasswords] = React.useState(false);
@@ -94,13 +92,6 @@ function AccountPage() {
     setTimeout(() => {
       setPasswordError("");
       setPasswordSuccess("");
-    }, 5000);
-  }, []);
-
-  const clearAccountMessages = React.useCallback(() => {
-    setTimeout(() => {
-      setAccountError("");
-      setAccountSuccess("");
     }, 5000);
   }, []);
 
@@ -315,75 +306,6 @@ function AccountPage() {
     },
     [user, passwordForm, clearPasswordMessages],
   );
-
-  // Fonction pour devenir conférencier
-  const handleBecomeSpeaker = React.useCallback(async () => {
-    if (!user) {
-      setAccountError("Vous devez être connecté pour devenir conférencier");
-      clearAccountMessages();
-      return;
-    }
-
-    setIsSaving(true);
-    setAccountError("");
-    setAccountSuccess("");
-
-    try {
-      // Obtenir un cookie CSRF frais
-      await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
-        credentials: "include",
-      });
-
-      const csrfToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1];
-
-      if (!csrfToken) {
-        throw new Error("CSRF token not found");
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/users/${user.id}/become-speaker`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-            "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
-          },
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message ||
-            `Erreur ${response.status}: ${response.statusText}`,
-        );
-      }
-
-      // Rafraîchir les données utilisateur dans le contexte
-      await fetchUser();
-
-      // Message de succès
-      setAccountSuccess(
-        "Votre demande pour devenir conférencier a été envoyée avec succès!",
-      );
-      clearAccountMessages();
-    } catch (err) {
-      setAccountError(
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de la demande pour devenir conférencier",
-      );
-      clearAccountMessages();
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user, fetchUser, clearAccountMessages]);
 
   // Si en chargement, afficher un indicateur
   if (loading) {
@@ -641,24 +563,10 @@ function AccountPage() {
             <CardTitle>Actions du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Messages de validation pour les actions du compte */}
-            {accountError && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                {accountError}
-              </div>
-            )}
-
-            {accountSuccess && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                {accountSuccess}
-              </div>
-            )}
-
-            {/* Bouton pour devenir conférencier - uniquement visible pour les utilisateurs BASIC avec email vérifié */}
             {user.role === "public" && (
               <div>
-                <Button onClick={handleBecomeSpeaker} disabled={isSaving}>
-                  {isSaving ? "Envoi en cours..." : "Devenir conférencier"}
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/account/become-speaker">Devenir conférencier</Link>
                 </Button>
                 <p className="text-sm text-muted-foreground mt-1">
                   Faites une demande pour devenir conférencier sur notre

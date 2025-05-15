@@ -22,6 +22,7 @@ import { Route as ManageOrganizerImport } from './routes/manage/organizer'
 import { Route as AuthRegisterImport } from './routes/auth/register'
 import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password'
+import { Route as AccountBecomeSpeakerImport } from './routes/account/become-speaker'
 
 // Create/Update Routes
 
@@ -91,6 +92,12 @@ const AuthForgotPasswordRoute = AuthForgotPasswordImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AccountBecomeSpeakerRoute = AccountBecomeSpeakerImport.update({
+  id: '/account/become-speaker',
+  path: '/account/become-speaker',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -107,6 +114,13 @@ declare module '@tanstack/react-router' {
       path: '/$404'
       fullPath: '/$404'
       preLoaderRoute: typeof R404Import
+      parentRoute: typeof rootRoute
+    }
+    '/account/become-speaker': {
+      id: '/account/become-speaker'
+      path: '/account/become-speaker'
+      fullPath: '/account/become-speaker'
+      preLoaderRoute: typeof AccountBecomeSpeakerImport
       parentRoute: typeof rootRoute
     }
     '/auth/forgot-password': {
@@ -180,6 +194,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$404': typeof R404Route
+  '/account/become-speaker': typeof AccountBecomeSpeakerRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -194,6 +209,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$404': typeof R404Route
+  '/account/become-speaker': typeof AccountBecomeSpeakerRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -209,6 +225,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/$404': typeof R404Route
+  '/account/become-speaker': typeof AccountBecomeSpeakerRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -225,6 +242,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$404'
+    | '/account/become-speaker'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -238,6 +256,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$404'
+    | '/account/become-speaker'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -251,6 +270,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$404'
+    | '/account/become-speaker'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -266,6 +286,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R404Route: typeof R404Route
+  AccountBecomeSpeakerRoute: typeof AccountBecomeSpeakerRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -280,6 +301,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
+  AccountBecomeSpeakerRoute: AccountBecomeSpeakerRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
@@ -303,6 +325,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/$404",
+        "/account/become-speaker",
         "/auth/forgot-password",
         "/auth/login",
         "/auth/register",
@@ -319,6 +342,9 @@ export const routeTree = rootRoute
     },
     "/$404": {
       "filePath": "$404.tsx"
+    },
+    "/account/become-speaker": {
+      "filePath": "account/become-speaker.tsx"
     },
     "/auth/forgot-password": {
       "filePath": "auth/forgot-password.tsx"
