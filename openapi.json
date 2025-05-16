@@ -1,0 +1,3198 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Talkmaster",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://talkmaster.stroyco.eu/api"
+    }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "operationId": "login.store",
+        "summary": "Attempt to authenticate a new session",
+        "tags": [
+          "AuthenticatedSession"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "operationId": "logout",
+        "summary": "Destroy an authenticated session",
+        "tags": [
+          "AuthenticatedSession"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/confirm-password": {
+      "post": {
+        "operationId": "password.confirm.store",
+        "summary": "Confirm the user's password",
+        "tags": [
+          "ConfirmablePassword"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/confirmed-password-status": {
+      "get": {
+        "operationId": "password.confirmation",
+        "summary": "Get the password confirmation status",
+        "tags": [
+          "ConfirmedPasswordStatus"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "confirmed": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "confirmed"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/sanctum/csrf-cookie": {
+      "get": {
+        "operationId": "sanctum.csrf-cookie",
+        "summary": "Return an empty response simply to trigger the storage of the CSRF cookie in the browser",
+        "tags": [
+          "CsrfCookie"
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/email/verification-notification": {
+      "post": {
+        "operationId": "verification.send",
+        "summary": "Send a new email verification notification",
+        "tags": [
+          "EmailVerificationNotification"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/user/favorites": {
+      "get": {
+        "operationId": "favorite.index",
+        "description": "Récupère la liste paginée des conférences ajoutées en favoris par l'utilisateur authentifié.\nInclut les détails des conférences et de leurs présentateurs.",
+        "summary": "Lister les conférences favorites de l'utilisateur",
+        "tags": [
+          "Favorite"
+        ],
+        "parameters": [
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": 15
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/talks/{talkId}/favorite": {
+      "post": {
+        "operationId": "favorite.store",
+        "description": "Ajoute une conférence spécifique à la liste des favoris de l'utilisateur authentifié.\nVérifie d'abord si la conférence existe et si elle n'est pas déjà dans les favoris.",
+        "summary": "Ajouter une conférence aux favoris de l'utilisateur",
+        "tags": [
+          "Favorite"
+        ],
+        "parameters": [
+          {
+            "name": "talkId",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence à ajouter aux favoris",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Conférence ajoutée aux favoris avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk added to favorites"
+                    },
+                    "favorite": {
+                      "$ref": "#/components/schemas/Favorite"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "favorite"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "La conférence demandée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La conférence est déjà dans les favoris de l'utilisateur (détecté par contrainte de base de données)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk already in favorites"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "favorite.destroy",
+        "description": "Retire une conférence spécifique de la liste des favoris de l'utilisateur authentifié.\nVérifie d'abord si la conférence est bien dans les favoris de l'utilisateur.",
+        "summary": "Supprimer une conférence des favoris de l'utilisateur",
+        "tags": [
+          "Favorite"
+        ],
+        "parameters": [
+          {
+            "name": "talkId",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence à retirer des favoris",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conférence retirée des favoris avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk removed from favorites"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "Aucun favori trouvé pour cette conférence et cet utilisateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Favorite not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset-password": {
+      "post": {
+        "operationId": "password.update",
+        "summary": "Reset the user's password",
+        "tags": [
+          "NewPassword"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/user/password": {
+      "put": {
+        "operationId": "user-password.update",
+        "summary": "Update the user's password",
+        "tags": [
+          "Password"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/forgot-password": {
+      "post": {
+        "operationId": "password.email",
+        "summary": "Send a reset link to the given user",
+        "tags": [
+          "PasswordResetLink"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/user/profile-information": {
+      "put": {
+        "operationId": "user-profile-information.update",
+        "summary": "Update the user's profile information",
+        "tags": [
+          "ProfileInformation"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "operationId": "register.store",
+        "summary": "Create a new registered user",
+        "tags": [
+          "RegisteredUser"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remember": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms": {
+      "get": {
+        "operationId": "rooms.index",
+        "description": "Récupère la liste complète des salles de conférence disponibles dans le système.\nLes salles sont retournées sans pagination.",
+        "summary": "Lister toutes les salles",
+        "tags": [
+          "Room"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Room"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "rooms.store",
+        "description": "Ajoute une nouvelle salle de conférence dans le système.\nRequiert un nom et une capacité minimale de places.",
+        "summary": "Créer une nouvelle salle",
+        "tags": [
+          "Room"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nom de la salle",
+                    "example": "Amphithéâtre A"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "description": "Capacité d'accueil de la salle (nombre de places)",
+                    "example": 150
+                  }
+                },
+                "required": [
+                  "name",
+                  "capacity"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Salle créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/rooms/{room}": {
+      "get": {
+        "operationId": "rooms.show",
+        "description": "Récupère les détails d'une salle de conférence identifiée par son ID.\nUtilise la résolution de modèle implicite de Laravel.",
+        "summary": "Afficher une salle spécifique",
+        "tags": [
+          "Room"
+        ],
+        "parameters": [
+          {
+            "name": "room",
+            "in": "path",
+            "required": true,
+            "description": "La salle à afficher",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "`Room`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "rooms.update",
+        "description": "Modifie les informations d'une salle existante.\nPermet de modifier le nom et/ou la capacité de la salle.",
+        "summary": "Mettre à jour une salle",
+        "tags": [
+          "Room"
+        ],
+        "parameters": [
+          {
+            "name": "room",
+            "in": "path",
+            "required": true,
+            "description": "La salle à mettre à jour",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nom de la salle",
+                    "example": "Salle de conférence B"
+                  },
+                  "capacity": {
+                    "type": "integer",
+                    "description": "Capacité d'accueil de la salle (nombre de places)",
+                    "example": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Salle mise à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "rooms.destroy",
+        "description": "Supprime définitivement une salle de conférence du système.\nCette action est irréversible.",
+        "summary": "Supprimer une salle",
+        "tags": [
+          "Room"
+        ],
+        "parameters": [
+          {
+            "name": "room",
+            "in": "path",
+            "required": true,
+            "description": "La salle à supprimer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Salle supprimée avec succès\n\n\n\nNo content"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/speakers-request": {
+      "get": {
+        "operationId": "speakers-request.index",
+        "description": "Récupère la liste des demandes de présentateurs disponibles dans le système.\nLe comportement varie selon le rôle de l'utilisateur authentifié :\n  - Les utilisateurs publics et présentateurs ne peuvent voir que leurs propres demandes\n  - Les administrateurs peuvent voir toutes les demandes avec filtrage et tri avancés",
+        "summary": "Lister les demandes de présentateurs",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Nombre d'éléments par page",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de la page à afficher",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 2
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtre par statut des demandes",
+            "schema": {
+              "type": "string"
+            },
+            "example": "open"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Recherche textuelle dans la description et téléphone",
+            "schema": {
+              "type": "string"
+            },
+            "example": "conference"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Champ utilisé pour le tri des résultats",
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "description": "Direction du tri (ascendant ou descendant)",
+            "schema": {
+              "type": "string"
+            },
+            "example": "desc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "speakers-request.store",
+        "description": "Soumet une nouvelle demande pour devenir présentateur.\nL'utilisateur doit être authentifié et le statut de la demande est automatiquement défini sur \"open\".",
+        "summary": "Créer une nouvelle demande de présentateur",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Numéro de téléphone du demandeur (optionnel)",
+                    "example": "+33123456789"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description de la demande et motivation pour devenir présentateur",
+                    "example": "Je souhaite présenter une conférence sur le DevOps et j'ai 5 années d'expérience dans ce domaine."
+                  }
+                },
+                "required": [
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Demande de présentateur créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request created successfully"
+                    },
+                    "speakers_request": {
+                      "$ref": "#/components/schemas/SpeakersRequest"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "speakers_request"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/speakers-request/{id}": {
+      "get": {
+        "operationId": "speakers-request.show",
+        "description": "Récupère les détails d'une demande de présentateur identifiée par son ID.",
+        "summary": "Afficher une demande de présentateur spécifique",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la demande à afficher",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails de la demande de présentateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "description": "La demande spécifiée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "speakers-request.update",
+        "description": "Modifie les informations d'une demande existante.\nL'action est restreinte aux utilisateurs ayant un rôle administrateur.\nLes utilisateurs publics et présentateurs ne peuvent pas modifier les demandes.",
+        "summary": "Mettre à jour une demande de présentateur",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la demande à mettre à jour",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Numéro de téléphone du demandeur (optionnel)",
+                    "example": "+33198765432"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description de la demande et motivation pour devenir présentateur",
+                    "example": "Demande mise à jour avec plus de détails sur mon expérience..."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Statut de la demande (open ou closed)",
+                    "example": "closed"
+                  }
+                },
+                "required": [
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demande de présentateur mise à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request updated successfully"
+                    },
+                    "speakers_request": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "speakers_request"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "L'utilisateur n'est pas autorisé à modifier les demandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La demande spécifiée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "speakers-request.destroy",
+        "description": "Supprime définitivement une demande de présentateur du système.\nL'action est restreinte aux utilisateurs ayant un rôle administrateur.\nLes utilisateurs publics et présentateurs ne peuvent pas supprimer les demandes.\nCette action est irréversible.",
+        "summary": "Supprimer une demande de présentateur",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la demande à supprimer",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Demande de présentateur supprimée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request deleted successfully"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "L'utilisateur n'est pas autorisé à supprimer les demandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La demande spécifiée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speakers-request/{id}/approve": {
+      "patch": {
+        "operationId": "speakersRequest.approve",
+        "description": "Cette méthode permet à un administrateur d'approuver une demande de promotion en tant que Speaker.\nL'action est restreinte aux utilisateurs ayant un rôle 'admin'.\nLes utilisateurs publics et présentateurs ne peuvent pas approuver les demandes.",
+        "summary": "Approuver une demande de promotion en tant que Speaker",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la demande à approuver",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Demande de présentateur approuvée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request approved successfully"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opération interdite - L'utilisateur n'a pas le rôle requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Only public users can be promoted to speaker"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Speakers request is not open"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "L'utilisateur n'est pas autorisé à approuver les demandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La demande spécifiée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speakers-request/{id}/refuse": {
+      "patch": {
+        "operationId": "speakersRequest.refuse",
+        "description": "Cette méthode permet à un administrateur de refuser une demande de promotion en tant que Speaker.\nL'action est restreinte aux utilisateurs ayant un rôle 'admin'.\nLes utilisateurs publics et présentateurs ne peuvent pas refuser les demandes.",
+        "summary": "Refuser une demande de promotion en tant que Speaker",
+        "tags": [
+          "SpeakersRequest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la demande à refuser",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Demande de présentateur refusée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request refused successfully"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La demande n'est pas ouverte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request is not open"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "L'utilisateur n'est pas autorisé à approuver les demandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La demande spécifiée n'existe pas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Speakers request not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/talks": {
+      "post": {
+        "operationId": "talk.store",
+        "description": "Permet à un présentateur de soumettre une nouvelle proposition de conférence.\nLes utilisateurs publics ne peuvent pas créer de conférence.\nLe statut initial est automatiquement défini sur \"pending\".",
+        "summary": "Créer une nouvelle conférence",
+        "tags": [
+          "Talk"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Titre de la conférence",
+                    "example": "Introduction à Vue.js 3"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "description": "Sujet principal de la conférence",
+                    "example": "JavaScript"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description détaillée de la conférence",
+                    "example": "Cette présentation abordera les nouveautés de Vue.js 3 et comment migrer une application existante."
+                  },
+                  "level": {
+                    "type": "string",
+                    "description": "Niveau de difficulté de la conférence",
+                    "example": "intermediate"
+                  }
+                },
+                "required": [
+                  "title",
+                  "subject",
+                  "description",
+                  "level"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conférence créée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk created successfully"
+                    },
+                    "talk": {
+                      "$ref": "#/components/schemas/Talk"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "talk"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - Les utilisateurs publics ne peuvent pas créer de conférence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "get": {
+        "operationId": "talk.index",
+        "description": "Récupère la liste des conférences filtrées selon le rôle de l'utilisateur :\n  - Les présentateurs ne peuvent voir que leurs propres conférences\n  - Les organisateurs et superadmins peuvent voir toutes les conférences\n  - Les utilisateurs publics n'ont pas accès à cette route",
+        "summary": "Lister les conférences de l'utilisateur",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "subject",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Tri",
+            "schema": {
+              "type": "string",
+              "default": "created_at"
+            }
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "desc"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": 15
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/talks/{id}": {
+      "get": {
+        "operationId": "talk.show",
+        "description": "Récupère les détails d'une conférence par son ID.\nSeuls le présentateur associé à la conférence ou les administrateurs peuvent y accéder.",
+        "summary": "Afficher une conférence spécifique",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails de la conférence demandée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'est pas le présentateur ou un administrateur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conférence non trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "talk.update",
+        "description": "Cette méthode permet deux types de mises à jour:\n1. Programmation d'une conférence (par un organisateur ou superadmin)\n2. Modification des détails d'une conférence (par le présentateur propriétaire)\n\nPour la programmation, des règles supplémentaires s'appliquent:\n- Les conférences doivent être programmées entre 9h00 et 19h00\n- Pas de chevauchement possible dans la même salle\n\nPour la mise à jour des détails, seules les conférences en statut \"pending\" peuvent être modifiées.",
+        "summary": "Mettre à jour ou programmer une conférence",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence à mettre à jour",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduled_date": {
+                    "type": "string",
+                    "description": "Date prévue pour la conférence",
+                    "example": "2025-06-15"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "description": "Heure de début (format 24h)",
+                    "example": "14:30"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "description": "Heure de fin (format 24h)",
+                    "example": "16:00"
+                  },
+                  "room_id": {
+                    "type": "integer",
+                    "description": "ID de la salle attribuée",
+                    "example": 3
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "scheduled_date",
+                  "start_time",
+                  "end_time",
+                  "room_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conférence mise à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Talk updated successfully"
+                        },
+                        "talk": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message",
+                        "talk"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Talk scheduled successfully"
+                        },
+                        "talk": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "message",
+                        "talk"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Modification non autorisée - La conférence n'est plus en statut \"pending\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Only pending talks can be updated"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Room scheduling conflict detected"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Talk must be scheduled between 09:00 and 19:00"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - Seul le présentateur peut modifier sa propre conférence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conférence non trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "talk.destroy",
+        "description": "Supprime définitivement une conférence du système.\nSeul le présentateur propriétaire peut supprimer sa propre conférence et uniquement si elle est en statut \"pending\".\nCette action est irréversible.",
+        "summary": "Supprimer une conférence",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence à supprimer",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conférence supprimée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk deleted successfully"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Suppression non autorisée - La conférence n'est plus en statut \"pending\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Only pending talks can be deleted"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - Seul le présentateur peut supprimer sa propre conférence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conférence non trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/talks/{id}/status": {
+      "put": {
+        "operationId": "talk.updateStatus",
+        "description": "Permet aux organisateurs d'accepter ou de rejeter une proposition de conférence.\nSeules les conférences en statut \"pending\" peuvent être acceptées ou rejetées.\nCette action est réservée aux utilisateurs ayant le rôle d'organisateur ou de superadmin.",
+        "summary": "Mettre à jour le statut d'une conférence",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "L'identifiant de la conférence",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "description": "Nouveau statut de la conférence",
+                    "example": "accepted"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statut de la conférence mis à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk status updated successfully"
+                    },
+                    "talk": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "talk"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Changement de statut non autorisé - La conférence n'est pas en statut \"pending\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Only pending talks can be accepted or rejected"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - Seuls les organisateurs peuvent modifier le statut",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conférence non trouvée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Talk not found"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/public/talks": {
+      "get": {
+        "operationId": "talk.publicIndex",
+        "description": "Récupère la liste des conférences programmées et accessibles au public.\nCette route est accessible à tous les utilisateurs, même non authentifiés.\nSeules les conférences en statut \"scheduled\" sont retournées.",
+        "summary": "Lister les conférences publiques",
+        "tags": [
+          "Talk"
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "room_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subject",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "speaker_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Tri par date/heure par défaut",
+            "schema": {
+              "type": "string",
+              "default": "scheduled_date"
+            }
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "asc"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": 15
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "operationId": "user.getCurrentUser",
+        "description": "Retourne les informations de l'utilisateur actuellement authentifié.\nCette route nécessite une authentification valide.\nMéthode HTTP: GET\nURL: /api/user",
+        "summary": "Récupérer l'utilisateur authentifié",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "users.index",
+        "description": "Récupère la liste paginée des utilisateurs du système.\nCette fonctionnalité est réservée aux organisateurs et superadmins.\nLes utilisateurs publics et présentateurs n'ont pas accès à cette ressource.",
+        "summary": "Lister les utilisateurs",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Nombre d'éléments par page (exemple : 20)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Numéro de la page à afficher (exemple : 2)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filtre par nom de famille",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Dubois"
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "description": "Filtre par prénom",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Jean"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filtre par adresse email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "jean.dubois@example.com"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Filtre par rôle d'utilisateur",
+            "schema": {
+              "type": "string"
+            },
+            "example": "organizer"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Recherche globale dans les champs textuels",
+            "schema": {
+              "type": "string"
+            },
+            "example": "développeur"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Champ utilisé pour le tri des résultats",
+            "schema": {
+              "type": "string"
+            },
+            "example": "name"
+          },
+          {
+            "name": "sort_direction",
+            "in": "query",
+            "description": "Direction du tri (ascendant ou descendant)",
+            "schema": {
+              "type": "string"
+            },
+            "example": "asc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée des utilisateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "users"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'a pas les droits requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "post": {
+        "operationId": "users.store",
+        "description": "Permet aux organisateurs et superadmins de créer un nouvel utilisateur dans le système.\nLes utilisateurs publics et présentateurs n'ont pas accès à cette fonctionnalité.",
+        "summary": "Créer un nouvel utilisateur",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nom de famille de l'utilisateur",
+                    "example": "Martin"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "description": "Prénom de l'utilisateur",
+                    "example": "Sophie"
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Adresse email unique de l'utilisateur",
+                    "example": "sophie.martin@example.com"
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "Rôle attribué à l'utilisateur",
+                    "example": "speaker"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Mot de passe de l'utilisateur (min. 8 caractères)",
+                    "example": "MotDePasse123!"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                },
+                "required": [
+                  "name",
+                  "first_name",
+                  "email",
+                  "role",
+                  "password",
+                  "password_confirmation"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Utilisateur créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User created successfully"
+                    },
+                    "user": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "user"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'a pas les droits requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    },
+    "/users/{user}": {
+      "get": {
+        "operationId": "users.show",
+        "description": "Récupère les détails d'un utilisateur identifié par son ID.",
+        "summary": "Afficher un utilisateur spécifique",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "description": "L'utilisateur à afficher",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Détails de l'utilisateur demandé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User retrieved successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "user"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      },
+      "put": {
+        "operationId": "users.update",
+        "description": "Met à jour les informations d'un utilisateur existant.\nLes restrictions d'accès suivantes s'appliquent :\n- Un utilisateur peut modifier son propre profil\n- Les superadmins peuvent modifier tous les profils\n- Les organisateurs peuvent modifier tous les profils sauf les superadmins\n- Seuls les superadmins et organisateurs peuvent modifier les rôles⚠️ Cannot generate request documentation: foreach() argument must be of type array|object, null given",
+        "summary": "Mettre à jour un utilisateur",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur mis à jour avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "user"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'a pas les droits requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "users.destroy",
+        "description": "Supprime définitivement un utilisateur du système.\nLes restrictions suivantes s'appliquent :\n- Seuls les superadmins et organisateurs peuvent supprimer des utilisateurs\n- Un organisateur ne peut pas supprimer un superadmin\n- Un utilisateur ne peut pas supprimer son propre compte\nCette action est irréversible.",
+        "summary": "Supprimer un utilisateur",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "description": "L'utilisateur à supprimer",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur supprimé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User deleted successfully"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opération interdite - Impossible de supprimer son propre compte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "You cannot delete your own account"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - Un organisateur ne peut pas supprimer un superadmin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/users/{user}/promote-to-speaker": {
+      "patch": {
+        "operationId": "user.promoteToSpeaker",
+        "description": "Change le rôle d'un utilisateur de \"public\" à \"speaker\".\nSeuls les superadmins et organisateurs peuvent effectuer cette action.\nL'utilisateur à promouvoir doit avoir actuellement le rôle \"public\".",
+        "summary": "Promouvoir un utilisateur public au rôle de présentateur",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "description": "L'utilisateur à promouvoir",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur promu avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User promoted to speaker successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "user"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opération interdite - L'utilisateur n'a pas le rôle requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Only public users can be promoted to speaker"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'a pas les droits requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/users/{user}/demote-to-public": {
+      "patch": {
+        "operationId": "user.demoteToPublic",
+        "description": "Change le rôle d'un utilisateur de \"speaker\" à \"public\".\nSeuls les superadmins et organisateurs peuvent effectuer cette action.\nL'utilisateur à rétrograder doit avoir actuellement le rôle \"speaker\".",
+        "summary": "Rétrograder un présentateur au rôle d'utilisateur public",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "required": true,
+            "description": "L'utilisateur à rétrograder",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur rétrogradé avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User demoted to public successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "user"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opération interdite - L'utilisateur n'a pas le rôle requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Only speakers can be demoted to public"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "description": "Accès non autorisé - L'utilisateur n'a pas les droits requis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ModelNotFoundException"
+          }
+        }
+      }
+    },
+    "/email/verify/{id}/{hash}": {
+      "get": {
+        "operationId": "verification.verify",
+        "summary": "Mark the authenticated user's email address as verified",
+        "tags": [
+          "VerifyEmail"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationException"
+          },
+          "403": {
+            "$ref": "#/components/responses/AuthorizationException"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationException"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Favorite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "talk_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "talk_id",
+          "created_at"
+        ],
+        "title": "Favorite"
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "capacity",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Room"
+      },
+      "SpeakersRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "phone",
+          "description",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SpeakersRequest"
+      },
+      "Talk": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "speaker_id": {
+            "type": "integer"
+          },
+          "scheduled_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "start_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "end_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "room_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "subject",
+          "description",
+          "level",
+          "status",
+          "speaker_id",
+          "scheduled_date",
+          "start_time",
+          "end_time",
+          "room_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Talk"
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "profile_picture": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "first_name",
+          "profile_picture",
+          "description",
+          "role"
+        ],
+        "title": "User"
+      }
+    },
+    "responses": {
+      "ValidationException": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Errors overview."
+                },
+                "errors": {
+                  "type": "object",
+                  "description": "A detailed description of each field that failed validation.",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "message",
+                "errors"
+              ]
+            }
+          }
+        }
+      },
+      "AuthenticationException": {
+        "description": "Unauthenticated",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
+      },
+      "AuthorizationException": {
+        "description": "Authorization error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
+      },
+      "ModelNotFoundException": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error overview."
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
