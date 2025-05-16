@@ -1,5 +1,6 @@
 import type { User } from "@/lib/types";
 import { API_BASE_URL } from "@/lib/utils";
+import { redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "./useAuth";
 
@@ -7,6 +8,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = window.location.pathname;
+  const isInAuth = pathname.startsWith("/auth");
 
   const fetchUser = useCallback(async (): Promise<User | null> => {
     if (isLoggingOut) {
@@ -24,6 +27,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (!res.ok) {
         setUser(null);
+        if (!isInAuth) {
+          redirect({
+            to: "/auth/login",
+            throw: true,
+          });
+        }
         return null;
       }
       const data = await res.json();
@@ -47,11 +56,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Erreur lors de la récupération de l'utilisateur:", error);
       setUser(null);
+      if (!isInAuth) {
+        redirect({
+          to: "/auth/login",
+          throw: true,
+        });
+      }
       return null;
     } finally {
       setLoading(false);
     }
-  }, [isLoggingOut]);
+  }, [isLoggingOut, isInAuth]);
 
   const logout = async () => {
     setIsLoggingOut(true);

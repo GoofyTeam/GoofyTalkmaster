@@ -9,7 +9,7 @@ import "./assets/styles/styles.css";
 import InnerApp from "./App.tsx";
 import { AuthProvider } from "./auth/context.tsx";
 import { ThemeProvider } from "./components/theme-provider.tsx";
-import reportWebVitals from "./reportWebVitals.ts";
+//import reportWebVitals from "./reportWebVitals.ts";
 
 export const router = createRouter({
   routeTree,
@@ -57,4 +57,4 @@ if (rootElement && !rootElement.innerHTML) {
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals(console.log);
+//reportWebVitals(console.log);
