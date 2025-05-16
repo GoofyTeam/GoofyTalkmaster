@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
+import { TalkCard } from "@/components/Talk";
 import { TalkFilters } from "@/components/TalkFilters";
 import type { Filters } from "@/components/TalkFilters";
-import { TalkCard } from "@/components/Talk";
-import type { Talk } from "@/types/talk";
-import { API_BASE_URL } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { API_BASE_URL } from "@/lib/utils";
+import type { Talk } from "@/types/talk";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Homepage() {
   const [talks, setTalks] = useState<Talk[]>([]);
@@ -20,7 +20,7 @@ export default function Homepage() {
   const [filters, setFilters] = useState<Filters>({});
   const [selectedTalk, setSelectedTalk] = useState<Talk | null>(null);
 
-  const fetchTalks = async () => {
+  const fetchTalks = useCallback(async () => {
     setLoading(true);
     try {
       const {
@@ -45,20 +45,24 @@ export default function Homepage() {
 
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
-        { headers: { Accept: "application/json" } }
+        { headers: { Accept: "application/json" } },
       );
       if (!res.ok) throw new Error("Erreur fetching talks");
 
       const payload = await res.json();
 
-      let data = (payload.data ?? payload) as any[];
+      let data: Talk[] = Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : [];
 
       if (fSearch) {
         const q = fSearch.toLowerCase();
         data = data.filter(
           (t) =>
-            t.title.toLowerCase().includes(q) ||
-            t.topic.toLowerCase().includes(q)
+            t.title?.toLowerCase().includes(q) ||
+            t.topic?.toLowerCase().includes(q),
         );
       }
       if (fSubject) {
@@ -70,12 +74,14 @@ export default function Homepage() {
       if (fDate) {
         data = data.filter(
           (t) =>
-            typeof t.scheduled_date === "string" &&
-            t.scheduled_date.startsWith(fDate)
+            typeof t.scheduledDate === "string" &&
+            t.scheduledDate.startsWith(fDate),
         );
       }
       if (fLevel) {
-        data = data.filter((t) => t.level === fLevel);
+        data = data.filter(
+          (t: Talk & { level?: string }) => t.level === fLevel,
+        );
       }
       if (fStatus) {
         data = data.filter((t) => t.status === fStatus);
@@ -83,8 +89,8 @@ export default function Homepage() {
 
       const talksList: Talk[] = data.map((t) => ({
         ...t,
-        scheduledDate: t.scheduled_date,
-        startTime: t.start_time,
+        scheduledDate: t.scheduledDate,
+        startTime: t.startTime,
       }));
 
       setTalks(talksList);
@@ -94,11 +100,11 @@ export default function Homepage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchTalks();
-  }, [filters]);
+  }, [fetchTalks]);
 
   return (
     <div className="container mx-auto px-4 py-8">
