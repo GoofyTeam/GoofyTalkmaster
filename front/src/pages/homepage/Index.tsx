@@ -61,7 +61,7 @@ export default function Homepage() {
 
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
-        { headers: { Accept: "application/json" } },
+        { headers: { Accept: "application/json" } }
       );
       if (!res.ok) throw new Error("Erreur fetching talks");
 
@@ -96,7 +96,7 @@ export default function Homepage() {
         filtered = filtered.filter(
           (t) =>
             t.title.toLowerCase().includes(q) ||
-            t.topic.toLowerCase().includes(q),
+            t.topic.toLowerCase().includes(q)
         );
       }
       if (fSubject) {
@@ -109,7 +109,7 @@ export default function Homepage() {
         filtered = filtered.filter(
           (t) =>
             typeof t.scheduledDate === "string" &&
-            t.scheduledDate.startsWith(fDate),
+            t.scheduledDate.startsWith(fDate)
         );
       }
       if (fLevel) {
