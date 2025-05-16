@@ -29,10 +29,7 @@ export function TalkFilters({ filters, onFiltersChange }: TalkFiltersProps) {
   const { search, subject, date, room_id, level, status } = filters;
 
   const update = (key: keyof Filters, value?: string) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value || undefined,
-    });
+    onFiltersChange({ ...filters, [key]: value || undefined });
   };
 
   return (
