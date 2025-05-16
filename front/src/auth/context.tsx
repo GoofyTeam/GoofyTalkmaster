@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = window.location.pathname;
   const isInAuth = pathname.startsWith("/auth");
+  const isInApp = pathname.startsWith("/app");
 
   const fetchUser = useCallback(async (): Promise<User | null> => {
     if (isLoggingOut) {
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (!res.ok) {
         setUser(null);
-        if (!isInAuth) {
+        if (!isInAuth && !isInApp) {
           redirect({
             to: "/auth/login",
             throw: true,
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Erreur lors de la récupération de l'utilisateur:", error);
       setUser(null);
-      if (!isInAuth) {
+      if (!isInAuth && !isInApp) {
         redirect({
           to: "/auth/login",
           throw: true,
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [isLoggingOut, isInAuth]);
+  }, [isLoggingOut, isInAuth, isInApp]);
 
   const logout = async () => {
     setIsLoggingOut(true);

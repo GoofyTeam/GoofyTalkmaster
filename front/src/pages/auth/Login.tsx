@@ -86,7 +86,7 @@ function Login() {
         <Card>
           <CardHeader>
             <Link
-              to="/"
+              to="/app"
               className="flex items-center gap-2 text-sm hover:underline"
             >
               <ArrowLeft size={16} /> Retour à l'accueil

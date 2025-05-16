@@ -25,6 +25,10 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
     const isAuthPage = location.pathname.startsWith("/auth");
     const isManagePage = location.pathname.startsWith("/manage");
 
+    if (location.pathname === "/") {
+      throw redirect({ to: "/app" });
+    }
+
     if (!isLoggedIn && !isAuthPage && location.pathname !== "/app") {
       throw redirect({ to: "/auth/login" });
     }
@@ -42,7 +46,6 @@ export const Route = createRootRouteWithContext<TalkmasterContext>()({
       throw redirect({ to: "/app" });
     }
   },
-
   component: () => (
     <>
       <HelmetProvider>
