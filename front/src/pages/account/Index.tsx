@@ -1,5 +1,5 @@
 import { useAuth } from "@/auth/useAuth";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate } from "@tanstack/react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import UserPlanning from "@/components/user-planning";
 import { API_BASE_URL } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -59,6 +60,9 @@ function AccountPage() {
   const { user, logout, loading, fetchUser } = useAuth();
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = React.useState(false);
+  const { favoriteTalks } = useLoaderData({
+    from: "/account/",
+  });
 
   // États pour les messages de validation séparés par formulaire
   const [profileError, setProfileError] = React.useState("");
@@ -325,7 +329,12 @@ function AccountPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Gestion de compte</h1>
+      <h2 className="text-3xl font-bold mb-6">Mes favoris</h2>
+      <div className="grid gap-6 mb-4">
+        <UserPlanning talks={favoriteTalks} />
+      </div>
+
+      <h2 className="text-3xl font-bold mb-6">Gestion de compte</h2>
 
       <div className="grid gap-6">
         {/* Informations de base */}

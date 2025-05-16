@@ -73,8 +73,9 @@ export function TalkCard({
         )}
 
         {/* Statut placé en bas à droite */}
-        {showStatus && talk.status && (
-          <div className="absolute bottom-0 right-0 mb-0.5">
+
+        <div className="absolute bottom-0 right-0 mb-0.5 gap-x-4 flex flex-row">
+          {showStatus && talk.status && (
             <span
               className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent ${getStatusClass(
                 talk.status,
@@ -82,8 +83,8 @@ export function TalkCard({
             >
               {getStatusLabel(talk.status)}
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

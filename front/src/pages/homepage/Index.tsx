@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { API_BASE_URL } from "@/lib/utils";
 import type { Talk } from "@/types/talk";
+import { Star } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface RawTalk {
   id: number;
@@ -53,11 +55,9 @@ export default function Homepage() {
       if (fRoomId) params.set("room_id", fRoomId);
       if (fLevel) params.set("level", fLevel);
       if (fStatus) params.set("status", fStatus);
-      params.set("per_page", "15");
+      params.set("per_page", "32");
       params.set("sort_by", "scheduled_date");
       params.set("sort_direction", "asc");
-
-      console.log("🚀 Envoi vers l’API :", params.toString());
 
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
@@ -66,7 +66,6 @@ export default function Homepage() {
       if (!res.ok) throw new Error("Erreur fetching talks");
 
       const json = (await res.json()) as ApiResponse;
-      console.log("🚀 Réponse brute :", json);
 
       const rawArray: RawTalk[] = Array.isArray(json) ? json : json.data;
 
@@ -87,8 +86,6 @@ export default function Homepage() {
             ? t.level
             : undefined,
       }));
-
-      console.log("🚀 Après mapping :", mapped);
 
       let filtered = mapped;
       if (fSearch) {
@@ -119,7 +116,6 @@ export default function Homepage() {
         filtered = filtered.filter((t) => t.status === fStatus);
       }
 
-      console.log("🚀 Après filtrage :", filtered);
       setTalks(filtered);
     } catch (err) {
       console.error(err);
@@ -128,6 +124,52 @@ export default function Homepage() {
       setLoading(false);
     }
   }, [filters]);
+
+  const addToFavorites = useCallback(async (talk: Talk) => {
+    try {
+      const csrfResponse = await fetch(
+        `${API_BASE_URL}/api/sanctum/csrf-cookie`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+          credentials: "include",
+        },
+      );
+
+      if (!csrfResponse.ok) {
+        const errorData = await csrfResponse.json();
+        throw new Error(
+          errorData.message || "Erreur lors de la récupération du CSRF token",
+        );
+      }
+
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("XSRF-TOKEN="))
+        ?.split("=")[1];
+
+      if (!csrfToken) {
+        throw new Error("CSRF token not found");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/talks/${talk.id}/favorite`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+        },
+      });
+      if (!res.ok) throw new Error("Erreur ajout aux favoris");
+      toast("Talk ajouté aux favoris");
+    } catch (err) {
+      console.error(err);
+      toast("Erreur lors de l'ajout aux favoris");
+    }
+  }, []);
 
   useEffect(() => {
     fetchTalks();
@@ -206,6 +248,14 @@ export default function Homepage() {
           </div>
           <DialogFooter>
             <Button onClick={() => setSelectedTalk(null)}>Fermer</Button>
+            {selectedTalk ? (
+              <Button
+                variant="outline"
+                onClick={() => addToFavorites(selectedTalk)}
+              >
+                <Star /> Ajouter aux favoris
+              </Button>
+            ) : null}
           </DialogFooter>
         </DialogContent>
       </Dialog>

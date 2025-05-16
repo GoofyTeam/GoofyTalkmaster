@@ -1,0 +1,39 @@
+/* Calendar.css */
+:root {
+  /* couleur par défaut pour les events bleu remplacés */
+  --rbc-event-bg: oklch(0.645 0.246 16.439) !important;
+  /* texte clair ou sombre */
+  --rbc-text-light: #2c3e50 !important;
+  --rbc-text-dark: #ecf0f1 !important;
+}
+
+/* Mode clair (par défaut) */
+[data-theme="light"] {
+  --rbc-text: var(--rbc-text-light);
+}
+
+/* Mode sombre */
+[data-theme="dark"] {
+  --rbc-text: var(--rbc-text-dark);
+}
+
+/* Surcharge sur tous les events */
+
+.rbc-event {
+  /* fallback pour navigateurs sans Oklch */
+  background-color: #3174ad;
+  background-color: var(--rbc-event-bg) !important;
+  color: var(--rbc-text) !important;
+  border: none !important;
+}
+
+/* Optionnel : toolbar, jours, heures, etc */
+.rbc-toolbar .rbc-toolbar-label,
+.rbc-time-header,
+.rbc-day-bg {
+  color: var(--rbc-text) !important;
+}
+
+.rbc-today {
+  background-color: oklch(0.645 0.246 16.439 / 0.3) !important;
+}

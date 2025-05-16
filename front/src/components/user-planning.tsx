@@ -15,6 +15,7 @@ import {
 } from "./ui/card";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "@/assets/styles/override-calendar.css";
 import { cn } from "@/lib/utils";
 import type { Talk } from "@/types/talk";
 
