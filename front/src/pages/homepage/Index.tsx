@@ -1,6 +1,5 @@
 import { TalkCard } from "@/components/Talk";
-import { TalkFilters } from "@/components/TalkFilters";
-import type { Filters } from "@/components/TalkFilters";
+import { type Filters, TalkFilters } from "@/components/TalkFilters";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +11,22 @@ import {
 } from "@/components/ui/dialog";
 import { API_BASE_URL } from "@/lib/utils";
 import type { Talk } from "@/types/talk";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+interface RawTalk {
+  id: number;
+  title: string;
+  topic: string;
+  description?: string;
+  speaker: { id: number; name: string };
+  status?: Talk["status"];
+  scheduled_date?: string;
+  start_time?: string;
+  room?: string;
+  level?: string;
+}
+
+type ApiResponse = { data: RawTalk[] } | RawTalk[];
 
 export default function Homepage() {
   const [talks, setTalks] = useState<Talk[]>([]);
@@ -20,7 +34,7 @@ export default function Homepage() {
   const [filters, setFilters] = useState<Filters>({});
   const [selectedTalk, setSelectedTalk] = useState<Talk | null>(null);
 
-  const fetchTalks = async () => {
+  const fetchTalks = useCallback(async () => {
     setLoading(true);
     try {
       const {
@@ -43,64 +57,81 @@ export default function Homepage() {
       params.set("sort_by", "scheduled_date");
       params.set("sort_direction", "asc");
 
+      console.log("🚀 Envoi vers l’API :", params.toString());
+
       const res = await fetch(
         `${API_BASE_URL}/api/public/talks?${params.toString()}`,
         { headers: { Accept: "application/json" } },
       );
       if (!res.ok) throw new Error("Erreur fetching talks");
 
-      const payload = await res.json();
+      const json = (await res.json()) as ApiResponse;
+      console.log("🚀 Réponse brute :", json);
 
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-      let data = (payload.data ?? payload) as any[];
+      const rawArray: RawTalk[] = Array.isArray(json) ? json : json.data;
 
+      const mapped: Talk[] = rawArray.map((t) => ({
+        id: t.id,
+        title: t.title,
+        topic: t.topic,
+        description: t.description,
+        speaker: t.speaker,
+        status: t.status,
+        scheduledDate: t.scheduled_date ?? "",
+        startTime: t.start_time ?? "",
+        room: t.room ?? "",
+        level:
+          t.level === "beginner" ||
+          t.level === "intermediate" ||
+          t.level === "advanced"
+            ? t.level
+            : undefined,
+      }));
+
+      console.log("🚀 Après mapping :", mapped);
+
+      let filtered = mapped;
       if (fSearch) {
         const q = fSearch.toLowerCase();
-        data = data.filter(
+        filtered = filtered.filter(
           (t) =>
             t.title.toLowerCase().includes(q) ||
             t.topic.toLowerCase().includes(q),
         );
       }
       if (fSubject) {
-        data = data.filter((t) => t.topic === fSubject);
+        filtered = filtered.filter((t) => t.topic === fSubject);
       }
       if (fRoomId) {
-        data = data.filter((t) => t.room === fRoomId);
+        filtered = filtered.filter((t) => t.room === fRoomId);
       }
       if (fDate) {
-        data = data.filter(
+        filtered = filtered.filter(
           (t) =>
-            typeof t.scheduled_date === "string" &&
-            t.scheduled_date.startsWith(fDate),
+            typeof t.scheduledDate === "string" &&
+            t.scheduledDate.startsWith(fDate),
         );
       }
       if (fLevel) {
-        data = data.filter((t) => t.level === fLevel);
+        filtered = filtered.filter((t) => t.level === fLevel);
       }
       if (fStatus) {
-        data = data.filter((t) => t.status === fStatus);
+        filtered = filtered.filter((t) => t.status === fStatus);
       }
 
-      const talksList: Talk[] = data.map((t) => ({
-        ...t,
-        scheduledDate: t.scheduled_date,
-        startTime: t.start_time,
-      }));
-
-      setTalks(talksList);
-    } catch (e) {
-      console.error(e);
+      console.log("🚀 Après filtrage :", filtered);
+      setTalks(filtered);
+    } catch (err) {
+      console.error(err);
       setTalks([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     fetchTalks();
-  }, [filters]);
+  }, [fetchTalks]);
 
   return (
     <div className="container mx-auto px-4 py-8">
