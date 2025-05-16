@@ -127,7 +127,7 @@ function AccountPage() {
 
   // Gestionnaire de changement de photo de profil
   const handleProfilePictureChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (event.target?.files?.[0]) {
       const file = event.target.files[0];
@@ -206,7 +206,7 @@ function AccountPage() {
           const errorData = await response.json();
           throw new Error(
             errorData.message ||
-              `Erreur ${response.status}: ${response.statusText}`
+              `Erreur ${response.status}: ${response.statusText}`,
           );
         }
 
@@ -221,14 +221,14 @@ function AccountPage() {
         setProfileError(
           err instanceof Error
             ? err.message
-            : "Erreur lors de la mise à jour du profil"
+            : "Erreur lors de la mise à jour du profil",
         );
         clearProfileMessages();
       } finally {
         setIsSaving(false);
       }
     },
-    [user, fetchUser, clearProfileMessages, profilePicture]
+    [user, fetchUser, clearProfileMessages, profilePicture],
   );
 
   // Fonction pour changer le mot de passe
@@ -236,7 +236,7 @@ function AccountPage() {
     async (values: z.infer<typeof PasswordFormSchema>) => {
       if (!user) {
         setPasswordError(
-          "Vous devez être connecté pour changer votre mot de passe"
+          "Vous devez être connecté pour changer votre mot de passe",
         );
         clearPasswordMessages();
         return;
@@ -277,14 +277,14 @@ function AccountPage() {
               password: values.new_password,
               password_confirmation: values.confirm_password,
             }),
-          }
+          },
         );
 
         if (!passwordResponse.ok) {
           const errorData = await passwordResponse.json();
           throw new Error(
             errorData.message ||
-              `Erreur ${passwordResponse.status}: ${passwordResponse.statusText}`
+              `Erreur ${passwordResponse.status}: ${passwordResponse.statusText}`,
           );
         }
 
@@ -293,7 +293,7 @@ function AccountPage() {
 
         // Message de succès
         setPasswordSuccess(
-          "Mot de passe mis à jour avec succès! Déconnexion en cours..."
+          "Mot de passe mis à jour avec succès! Déconnexion en cours...",
         );
         clearPasswordMessages();
 
@@ -306,7 +306,7 @@ function AccountPage() {
           } catch (error) {
             console.error(
               "Erreur lors de la déconnexion après changement de mot de passe:",
-              error
+              error,
             );
             navigate({ to: "/auth/login" });
           }
@@ -315,14 +315,14 @@ function AccountPage() {
         setPasswordError(
           err instanceof Error
             ? err.message
-            : "Erreur lors du changement de mot de passe"
+            : "Erreur lors du changement de mot de passe",
         );
         clearPasswordMessages();
       } finally {
         setIsSaving(false);
       }
     },
-    [user, passwordForm, clearPasswordMessages, logout, navigate]
+    [user, passwordForm, clearPasswordMessages, logout, navigate],
   );
 
   // Si en chargement, afficher un indicateur

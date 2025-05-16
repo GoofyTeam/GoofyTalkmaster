@@ -51,7 +51,6 @@ export default function Homepage() {
 
       const payload = await res.json();
 
-      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       let data = (payload.data ?? payload) as any[];
 
       if (fSearch) {
@@ -97,7 +96,6 @@ export default function Homepage() {
     }
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     fetchTalks();
   }, [filters]);
