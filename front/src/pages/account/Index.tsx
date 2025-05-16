@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { API_BASE_URL } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -94,17 +93,6 @@ function AccountPage() {
       setPasswordSuccess("");
     }, 5000);
   }, []);
-
-  // Fonction de déconnexion
-  const handleLogout = React.useCallback(async () => {
-    try {
-      await logout();
-      // La redirection sera gérée par le AuthProvider
-    } catch (error) {
-      console.error("Erreur de déconnexion:", error);
-      navigate({ to: "/auth/login" });
-    }
-  }, [logout, navigate]);
 
   // Gestionnaire de formulaire
   const form = useForm<z.infer<typeof AccountFormSchema>>({
