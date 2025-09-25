@@ -96,19 +96,19 @@ COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensi
 COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 COPY --from=extensions /usr/bin/composer /usr/bin/composer
 
-COPY php.ini $PHP_INI_DIR/conf.d/
-COPY opcache.ini $PHP_INI_DIR/conf.d/
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY prod.entrypoint.sh /usr/local/bin/
+COPY docker/php/php.ini $PHP_INI_DIR/conf.d/
+COPY docker/php/opcache.ini $PHP_INI_DIR/conf.d/
+COPY docker/php/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/php/prod.final.entrypoint.sh /usr/local/bin/
 COPY --from=extensions /app ${WORKDIR}
-COPY ../nginx/api.conf /etc/nginx/http.d/default.conf
+COPY docker/nginx/api.conf /etc/nginx/http.d/default.conf
 
-RUN chmod +x /usr/local/bin/prod.entrypoint.sh \
+RUN chmod +x /usr/local/bin/prod.final.entrypoint.sh \
   && chown -R ${USER_NAME}:${GROUP_NAME} \
   $WORKDIR \
   /etc/nginx \
   /etc/supervisor \
-  /usr/local/bin/prod.entrypoint.sh \
+  /usr/local/bin/prod.final.entrypoint.sh \
   /var/log \
   /run/php \
   && find $WORKDIR -type f -exec chmod 664 {} + \
@@ -118,4 +118,4 @@ WORKDIR $WORKDIR
 
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/prod.entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/prod.final.entrypoint.sh"]
