@@ -3,7 +3,7 @@ services:
     container_name: "front-talkmaster"
     build:
       context: .
-      dockerfile: docker/front.Dockerfile
+      dockerfile: docker/front.prod.dockerfile
     ports:
       - "${FORWARD_FRONT_PORT:-5442}:80"
     networks:
@@ -17,8 +17,8 @@ services:
     container_name: "back-talkmaster"
     #user: www-data
     build:
-      context: ./docker/php
-      dockerfile: prod.Dockerfile
+      context: .
+      dockerfile: docker/php/prod.final.Dockerfile
     environment:
       IGNITION_LOCAL_SITES_PATH: "${PWD:-/var/www/html}"
     volumes:

@@ -21,11 +21,11 @@ jobs:
         include:
           - name: front
             context: .
-            dockerfile: docker/front.Dockerfile
+            dockerfile: docker/front.prod.dockerfile
             image_suffix: front
           - name: back
             context: .
-            dockerfile: docker/php/prod.Dockerfile
+            dockerfile: docker/php/prod.final.Dockerfile
             image_suffix: back
     steps:
       - uses: actions/checkout@v4
