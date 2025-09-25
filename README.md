@@ -25,23 +25,27 @@
 - [Docker Compose](https://docs.docker.com/compose/)
 - [Make](https://www.gnu.org/software/make/)
 
-### Étapes
+### Démarrage rapide
 
-1. Cloner le dépôt :
+1. **Cloner le dépôt**
 
    ```bash
    git clone https://github.com/GoofyTeam/GoofyTalkmaster.git
    cd GoofyTalkmaster
    ```
 
-2. Lancer les conteneurs :
+2. **Préparer l'environnement Laravel**
 
    ```bash
-   docker-compose up -d
+   cp back/.env.example back/.env
+   docker compose up -d
+   make install
    make fresh
    ```
 
-3. Accéder à l'application :
+   > `make install` exécute `composer install` dans le conteneur `back-talkmaster` et `make fresh` lance les migrations et charge les données de démonstration.
+
+3. **Accéder aux services**
    - Frontend : [http://localhost:3000](http://localhost:3000)
    - Backend : [http://localhost:8000](http://localhost:8080)
    - En ligne : [https://talkmaster.stroyco.eu](https://talkmaster.stroyco.eu)
