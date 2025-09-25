@@ -1,135 +1,272 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-echo ""
-echo "***********************************************************"
-echo "   Starting LARAVEL PHP-FPM Container (Production)       "
-echo "***********************************************************"
-
 info() { echo "[INFO]    $*"; }
 warning() { echo "[WARNING] $*"; }
 fatal() { echo "[ERROR]   $*" >&2; exit 1; }
 
 USER_NAME=${USER_NAME:-www-data}
 WEB_ROOT="/var/www/html"
+ENV_FILE="$WEB_ROOT/.env"
+SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
+MAX_RETRIES=${DB_MAX_RETRIES:-30}
+RETRY_DELAY=${DB_RETRY_DELAY:-5}
 
-# Exécuter toutes les opérations qui nécessitent un accès root d'abord
-info "Setting up permissions on web root..."
-chown -R $USER_NAME:$USER_NAME "$WEB_ROOT" 2>/dev/null || {
-  warning "Cannot change ownership of files. This is normal if using Docker volumes."
-  warning "Setting more permissive permissions for Docker volumes..."
-  
-  mkdir -p "$WEB_ROOT/storage/logs" "$WEB_ROOT/storage/framework" "$WEB_ROOT/bootstrap/cache"
-  chmod -R 777 "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
-  info "Permissions set for storage and cache directories."
+trim_quotes() {
+  local value="$1"
+  value="${value%\"}"
+  value="${value#\"}"
+  value="${value%\'}"
+  value="${value#\'}"
+  printf '%s' "$value"
 }
 
-# Créer vendor directory avec des permissions correctes
-if [[ ! -d "$WEB_ROOT/vendor" ]] && [[ -f "$WEB_ROOT/composer.json" ]]; then
-  info "Creating vendor directory with correct permissions..."
-  mkdir -p "$WEB_ROOT/vendor"
-  chown -R $USER_NAME:$USER_NAME "$WEB_ROOT/vendor"
-  info "Vendor directory created and permissions set."
-fi
+escape_sed() {
+  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
 
-# Vérifier la présence du .env
-if [[ ! -f "$WEB_ROOT/.env" ]]; then
-  fatal ".env file is missing. Please provide a .env file for production."
-else
-  info ".env file exists."
-fi
+format_env_value() {
+  local value="$1"
+  if [[ "$value" == *" "* ]] || [[ "$value" == *"#"* ]] || [[ "$value" == *";"* ]]; then
+    value="$(printf '%s' "$value" | sed 's/"/\\"/g')"
+    printf '"%s"' "$value"
+  else
+    printf '%s' "$value"
+  fi
+}
 
-# Créer les répertoires de logs pour PHP-FPM
-mkdir -p /var/log/php-fpm
-chown -R $USER_NAME:$USER_NAME /var/log/php-fpm
+set_env_value() {
+  local key="$1"
+  local value="$2"
 
-# Vérifier et corriger les permissions pour PHP-FPM
-info "Checking and fixing permissions for PHP-FPM..."
-if [ -d /var/run/php-fpm ]; then
-  chown -R $USER_NAME:$USER_NAME /var/run/php-fpm
-else
-  mkdir -p /var/run/php-fpm
-  chown -R $USER_NAME:$USER_NAME /var/run/php-fpm
-fi
+  if [[ -z "$value" ]]; then
+    return
+  fi
 
-# Créer la configuration Supervisor
-if [[ -f "$WEB_ROOT/artisan" ]]; then
-    info "Creating Laravel supervisor configuration for production..."
-    TASK=/etc/supervisor/conf.d/laravel-worker.conf
-    cat > "$TASK" <<EOF
-[program:Laravel-scheduler]
-process_name=%(program_name)s_%(process_num)02d
-command=/bin/sh -c "while true; do php /var/www/html/artisan schedule:run --no-interaction; sleep 60; done"
+  local formatted
+  formatted=$(format_env_value "$value")
+  if grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
+    local escaped
+    escaped=$(escape_sed "$formatted")
+    sed -i "s|^${key}=.*|${key}=${escaped}|" "$ENV_FILE"
+  else
+    printf '%s=%s\n' "$key" "$formatted" >>"$ENV_FILE"
+  fi
+}
+
+read_env_var() {
+  local key="$1"
+  local fallback="${2:-}"
+  local value="${!key-}"
+
+  if [[ -z "$value" && -f "$ENV_FILE" ]]; then
+    value=$(grep -E "^${key}=" "$ENV_FILE" | tail -n1 | cut -d '=' -f2- || true)
+    value=$(trim_quotes "$value")
+  fi
+
+  if [[ -z "$value" ]]; then
+    value="$fallback"
+  fi
+
+  printf '%s' "$value"
+}
+
+bool_is_true() {
+  case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+    1|true|yes|on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+run_as_app_user() {
+  su-exec "$USER_NAME" sh -lc "$*"
+}
+
+prepare_env_file() {
+  if [[ ! -f "$ENV_FILE" ]]; then
+    if [[ -f "$WEB_ROOT/.env.example" ]]; then
+      cp "$WEB_ROOT/.env.example" "$ENV_FILE"
+      info ".env file not found. Created from .env.example."
+    else
+      touch "$ENV_FILE"
+      warning "No .env or .env.example found. Created empty .env file."
+    fi
+  else
+    info ".env file detected."
+  fi
+
+  if [[ "${LARAVEL_APPLY_ENV_VARS:-true}" != "false" ]]; then
+    local env_keys=(
+      APP_NAME APP_ENV APP_KEY APP_DEBUG APP_URL APP_LOCALE APP_FALLBACK_LOCALE APP_FAKER_LOCALE APP_TIMEZONE
+      DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD
+      SESSION_DRIVER SESSION_LIFETIME SESSION_ENCRYPT SESSION_PATH SESSION_DOMAIN
+      CACHE_STORE CACHE_PREFIX QUEUE_CONNECTION BROADCAST_CONNECTION FILESYSTEM_DISK
+      REDIS_CLIENT REDIS_HOST REDIS_PASSWORD REDIS_PORT REDIS_URL
+      MAIL_MAILER MAIL_HOST MAIL_PORT MAIL_ENCRYPTION MAIL_FROM_ADDRESS MAIL_FROM_NAME
+      AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION AWS_BUCKET AWS_USE_PATH_STYLE_ENDPOINT
+      VITE_APP_NAME SANCTUM_STATEFUL_DOMAINS
+    )
+
+    for key in "${env_keys[@]}"; do
+      if [[ -n "${!key-}" ]]; then
+        set_env_value "$key" "${!key}"
+      fi
+    done
+  fi
+}
+
+setup_permissions() {
+  info "Ensuring correct permissions on application directories..."
+  mkdir -p "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
+  chown -R "$USER_NAME":"$USER_NAME" "$WEB_ROOT" /var/log/nginx /var/log/php-fpm /run/php
+  chmod -R 775 "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
+}
+
+configure_supervisor() {
+  mkdir -p "$SUPERVISOR_CONF_DIR"
+
+  if bool_is_true "${ENABLE_LARAVEL_SCHEDULER:-true}"; then
+    cat >"$SUPERVISOR_CONF_DIR/laravel-scheduler.conf" <<EOF_SCHED
+[program:laravel-scheduler]
+command=/bin/sh -c "cd $WEB_ROOT && while true; do php artisan schedule:run --no-interaction; sleep 60; done"
 autostart=true
 autorestart=true
-numprocs=1
 user=$USER_NAME
+priority=20
 stdout_logfile=/var/www/html/storage/logs/laravel_scheduler.log
-redirect_stderr=true
+stderr_logfile=/var/www/html/storage/logs/laravel_scheduler_error.log
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+EOF_SCHED
+  fi
 
-[program:Laravel-horizon]
-process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/html/artisan horizon
+  if bool_is_true "${ENABLE_LARAVEL_HORIZON:-true}"; then
+    cat >"$SUPERVISOR_CONF_DIR/laravel-horizon.conf" <<EOF_HORIZON
+[program:laravel-horizon]
+command=/bin/sh -c "cd $WEB_ROOT && php artisan horizon"
 autostart=true
 autorestart=true
-numprocs=1
 user=$USER_NAME
+priority=30
 stdout_logfile=/var/www/html/storage/logs/laravel_horizon.log
-redirect_stderr=true
+stderr_logfile=/var/www/html/storage/logs/laravel_horizon_error.log
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+EOF_HORIZON
+  fi
 
-[program:php-fpm]
-command=php-fpm -F
+  cat >"$SUPERVISOR_CONF_DIR/nginx.conf" <<EOF_NGINX
+[program:nginx]
+command=/usr/sbin/nginx -g 'daemon off;'
 autostart=true
 autorestart=true
-priority=5
-stdout_events_enabled=true
-stderr_events_enabled=true
-stdout_logfile=/var/log/php-fpm/stdout.log
-stderr_logfile=/var/log/php-fpm/stderr.log
-EOF
-    info "Laravel supervisor configuration created."
-fi
+priority=10
+stdout_logfile=/var/log/nginx/stdout.log
+stderr_logfile=/var/log/nginx/stderr.log
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+EOF_NGINX
+}
 
-# Maintenant exécuter les commandes qui peuvent être exécutées en tant que www-data
-info "Switching to $USER_NAME user for Composer and Laravel operations..."
-if ! id "$USER_NAME" &>/dev/null; then
-  fatal "User $USER_NAME does not exist. Please create the user before running this script."
-fi
+wait_for_database() {
+  local connection host port username password
+  connection=$(read_env_var DB_CONNECTION pgsql)
+  host=$(read_env_var DB_HOST postgres-talkmaster)
+  port=$(read_env_var DB_PORT 5432)
+  username=$(read_env_var DB_USERNAME talkmaster)
+  password=$(read_env_var DB_PASSWORD password)
 
-
-# Installation des dépendances Composer
-if [[ -f "$WEB_ROOT/composer.json" ]]; then
-  if command -v composer >/dev/null 2>&1; then
-    info "Installing Composer dependencies for production..."
-    cd "$WEB_ROOT" || exit
-    
-    # Exécuter les commandes Composer en tant que $USER_NAME
-    su -c "composer install --no-interaction --no-progress --no-suggest" $USER_NAME
-    info "Composer dependencies installed."
-  else
-    warning "composer command not found, skipping Composer install."
+  if [[ "$connection" != "pgsql" ]]; then
+    warning "Unsupported DB_CONNECTION '$connection'. Skipping readiness probe."
+    return
   fi
-fi
 
-# Installer les dépendances NPM avec l'utilisateur approprié
-if [[ -f "$WEB_ROOT/package.json" ]]; then
-  if command -v npm >/dev/null 2>&1; then
-    info "Installing NPM dependencies and building assets for production..."
-    cd "$WEB_ROOT" || exit
-    
-    # Exécuter les commandes NPM en tant que $USER_NAME
-    su -c "npm ci --no-audit --no-fund --prefer-offline" $USER_NAME
-    su -c "npm run build" $USER_NAME
-    info "Production assets built successfully."
-  else
-    warning "npm command not found, skipping assets build."
+  info "Waiting for PostgreSQL at $host:$port (user: $username)..."
+  for attempt in $(seq 1 "$MAX_RETRIES"); do
+    if PGPASSWORD="$password" pg_isready -h "$host" -p "$port" -U "$username" >/dev/null 2>&1; then
+      info "PostgreSQL is ready."
+      return
+    fi
+
+    warning "Database not ready yet. Retrying in ${RETRY_DELAY}s (${attempt}/${MAX_RETRIES})..."
+    sleep "$RETRY_DELAY"
+  done
+
+  fatal "Database connection failed after $MAX_RETRIES attempts."
+}
+
+artisan_cmd() {
+  local cmd="$1"
+  if [[ ! -f "$WEB_ROOT/artisan" ]]; then
+    warning "artisan file missing. Skipping command '$cmd'."
+    return
   fi
-else
-  info "No package.json found. Skipping frontend build."
-fi
+  info "Running artisan command: php artisan $cmd"
+  run_as_app_user "cd $WEB_ROOT && php artisan $cmd"
+}
 
-php artisan key:generate
-php artisan migrate --force
+ensure_storage_link() {
+  local link="$WEB_ROOT/public/storage"
+  if [[ -L "$link" || -e "$link" ]]; then
+    info "Storage link already present."
+    return
+  fi
 
-# Démarrer supervisord
-exec supervisord -c /etc/supervisor/supervisord.conf
+  artisan_cmd "storage:link"
+}
+
+configure_nginx_user() {
+  local nginx_conf="/etc/nginx/nginx.conf"
+  if [[ ! -f "$nginx_conf" ]]; then
+    warning "nginx.conf not found. Skipping user adjustment."
+    return
+  fi
+
+  if grep -q '^user[[:space:]]' "$nginx_conf"; then
+    sed -i "s/^user[[:space:]].*/user ${USER_NAME};/" "$nginx_conf"
+  else
+    sed -i "1s|^|user ${USER_NAME};\n|" "$nginx_conf"
+  fi
+}
+
+main() {
+  echo ""
+  echo "***********************************************************"
+  echo "   Starting LARAVEL PHP-FPM Container (Production)          "
+  echo "***********************************************************"
+
+  prepare_env_file
+  setup_permissions
+  configure_nginx_user
+  configure_supervisor
+
+  if bool_is_true "${LARAVEL_GENERATE_APP_KEY:-true}"; then
+    local app_key
+    app_key=$(read_env_var APP_KEY)
+    if [[ -z "$app_key" ]]; then
+      artisan_cmd "key:generate --force"
+    else
+      info "APP_KEY already provided."
+    fi
+  fi
+
+  if bool_is_true "${LARAVEL_STORAGE_LINK:-true}"; then
+    ensure_storage_link
+  fi
+
+  if bool_is_true "${LARAVEL_RUN_MIGRATIONS:-true}"; then
+    wait_for_database
+    artisan_cmd "migrate --force"
+  else
+    info "Skipping database migrations (LARAVEL_RUN_MIGRATIONS=${LARAVEL_RUN_MIGRATIONS:-false})."
+  fi
+
+  if bool_is_true "${LARAVEL_OPTIMIZE:-true}"; then
+    artisan_cmd "optimize"
+  fi
+
+  info "Launching Supervisor..."
+  exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+}
+
+main "$@"
