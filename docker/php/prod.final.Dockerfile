@@ -41,7 +41,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 COPY back/composer.json back/composer.lock ./
-RUN composer install --no-interaction --no-progress --no-suggest --prefer-dist --no-dev --optimize-autoloader
+RUN composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader --no-scripts
 
 COPY back/package.json back/package-lock.json ./
 RUN npm ci --no-audit --no-fund --prefer-offline
