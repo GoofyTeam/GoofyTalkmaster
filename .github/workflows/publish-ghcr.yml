@@ -24,8 +24,8 @@ jobs:
             dockerfile: docker/front.Dockerfile
             image_suffix: front
           - name: back
-            context: docker/php
-            dockerfile: prod.Dockerfile
+            context: .
+            dockerfile: docker/php/prod.Dockerfile
             image_suffix: back
     steps:
       - uses: actions/checkout@v4

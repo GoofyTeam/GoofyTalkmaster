@@ -1,10 +1,10 @@
-FROM php:8.4-fpm-alpine AS builder
+FROM php:8.4-fpm-alpine AS extensions
 
 ARG WORKDIR=/var/www/html
 ENV TZ=Europe/Paris
 
 RUN --mount=type=cache,target=/var/cache/apk \
-  apk add --update \
+  apk add --update --no-cache \
   tzdata \
   postgresql-dev \
   icu-dev \
@@ -14,6 +14,9 @@ RUN --mount=type=cache,target=/var/cache/apk \
   libjpeg-turbo-dev \
   libwebp-dev \
   freetype-dev \
+  git \
+  nodejs \
+  npm \
   $PHPIZE_DEPS
 
 RUN docker-php-ext-configure intl \
@@ -30,13 +33,22 @@ RUN docker-php-ext-configure intl \
   zip \
   gd
 
-RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
-  && pecl install redis \
+RUN pecl install redis \
   && docker-php-ext-enable redis.so
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
+
+COPY back/composer.json back/composer.lock ./
+RUN composer install --no-interaction --no-progress --no-suggest --prefer-dist --no-dev --optimize-autoloader
+
+COPY back/package.json back/package-lock.json ./
+RUN npm ci --no-audit --no-fund --prefer-offline
+
+COPY back/. ./
+RUN npm run build \
+  && rm -rf node_modules
 
 FROM php:8.4-fpm-alpine
 
@@ -47,65 +59,63 @@ ENV DOCUMENT_ROOT=${WORKDIR} \
   TZ=Europe/Paris
 ARG USER_ID=33
 ARG GROUP_ID=33
-ENV USER_NAME=www-data
 ARG GROUP_NAME=www-data
 
-
-COPY --from=builder /usr/share/zoneinfo/Europe/Paris /etc/localtime
+COPY --from=extensions /usr/share/zoneinfo/Europe/Paris /etc/localtime
 RUN echo "Europe/Paris" > /etc/timezone
 
 RUN --mount=type=cache,target=/var/cache/apk \
   apk add --update --no-cache \
   nginx \
   supervisor \
-  redis \
-  postgresql-client \ 
+  postgresql-client \
   ca-certificates \
   curl \
   bash \
-  nodejs \
-  npm \
   icu-libs \
   libzip \
-  tzdata && \
-  deluser ${USER_NAME} && \
-  addgroup -g ${GROUP_ID} ${GROUP_NAME} && \
-  adduser -u ${USER_ID} -G ${GROUP_NAME} -h /home/${USER_NAME} -s /bin/sh -D ${USER_NAME} && \
-  mkdir -p /etc/supervisor/conf.d \
+  libpng \
+  libjpeg-turbo \
+  libwebp \
+  freetype \
+  tzdata \
+  shadow \
+  su-exec \
+  && deluser ${USER_NAME} \
+  && addgroup -g ${GROUP_ID} ${GROUP_NAME} \
+  && adduser -u ${USER_ID} -G ${GROUP_NAME} -h /home/${USER_NAME} -s /bin/sh -D ${USER_NAME} \
+  && mkdir -p \
+  /etc/supervisor/conf.d \
   /var/log/supervisor \
   /var/log/nginx \
-  /var/log/php-fpm
+  /var/log/php-fpm \
+  /run/php \
+  && chown -R ${USER_NAME}:${GROUP_NAME} /var/log
 
-COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+COPY --from=extensions /usr/bin/composer /usr/bin/composer
 
-COPY --from=builder /usr/bin/composer /usr/bin/composer
-
-COPY index.php $WORKDIR/
 COPY php.ini $PHP_INI_DIR/conf.d/
 COPY opcache.ini $PHP_INI_DIR/conf.d/
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY prod.entrypoint.sh /usr/local/bin/
+COPY --from=extensions /app ${WORKDIR}
+COPY ../nginx/api.conf /etc/nginx/http.d/default.conf
 
-RUN chown -R ${USER_NAME}:${GROUP_NAME} /var/www && \
-  chown -R ${USER_NAME}:${GROUP_NAME} /var/log/ && \
-  chown -R ${USER_NAME}:${GROUP_NAME} /etc/supervisor/conf.d/ && \
-  chown -R ${USER_NAME}:${GROUP_NAME} $PHP_INI_DIR/conf.d/ && \
-  chown -R ${USER_NAME}:${GROUP_NAME} /tmp && \
-  chmod +x /usr/local/bin/prod.entrypoint.sh
-
-#RUN chmod +x /usr/local/bin/prod.entrypoint.sh && \
-#  chown -R ${USER_NAME}:${GROUP_NAME} \
-#  /var/www \
-#  /var/log \
-#  /etc/supervisor/conf.d \
-#  $PHP_INI_DIR/conf.d \
-#  /tmp
-
-#RUN mkdir -p $WORKDIR/storage/logs $WORKDIR/storage/framework/cache $WORKDIR/storage/framework/sessions $WORKDIR/storage/framework/views $WORKDIR/bootstrap/cache && \
-#  chown -R ${USER_NAME}:${GROUP_NAME} $WORKDIR/storage $WORKDIR/bootstrap/cache && \
-#  chmod -R 775 $WORKDIR/storage $WORKDIR/bootstrap/cache
+RUN chmod +x /usr/local/bin/prod.entrypoint.sh \
+  && chown -R ${USER_NAME}:${GROUP_NAME} \
+  $WORKDIR \
+  /etc/nginx \
+  /etc/supervisor \
+  /usr/local/bin/prod.entrypoint.sh \
+  /var/log \
+  /run/php \
+  && find $WORKDIR -type f -exec chmod 664 {} + \
+  && find $WORKDIR -type d -exec chmod 775 {} +
 
 WORKDIR $WORKDIR
+
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/prod.entrypoint.sh"]

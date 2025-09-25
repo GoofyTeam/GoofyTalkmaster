@@ -1,0 +1,121 @@
+services:
+  front-talkmaster:
+    image: ghcr.io/goofyteam/goofytalkmaster-front:main
+    container_name: front-talkmaster
+    depends_on:
+      - back-talkmaster
+    ports:
+      - "${FORWARD_FRONT_PORT:-5442}:80"
+    networks:
+      - talkmaster
+
+  back-talkmaster:
+    image: ghcr.io/goofyteam/goofytalkmaster-back:main
+    container_name: back-talkmaster
+    networks:
+      talkmaster:
+        aliases:
+          - nginx-talkmaster
+    volumes:
+      - laravel-storage:/var/www/html/storage
+    environment:
+      APP_NAME: ${APP_NAME:-Talkmaster}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Paris}
+      APP_LOCALE: ${APP_LOCALE:-fr}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
+      APP_FAKER_LOCALE: ${APP_FAKER_LOCALE:-fr_FR}
+      APP_KEY: ${APP_KEY:-}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+      DB_CONNECTION: ${DB_CONNECTION:-pgsql}
+      DB_HOST: ${DB_HOST:-postgres-talkmaster}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_DATABASE: ${DB_DATABASE:-talkmaster_database}
+      DB_USERNAME: ${DB_USERNAME:-talkmaster}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      CACHE_STORE: ${CACHE_STORE:-redis}
+      SESSION_DRIVER: ${SESSION_DRIVER:-database}
+      SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
+      SESSION_ENCRYPT: ${SESSION_ENCRYPT:-false}
+      SESSION_PATH: ${SESSION_PATH:-/}
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-log}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK:-public}
+      REDIS_CLIENT: ${REDIS_CLIENT:-phpredis}
+      REDIS_HOST: ${REDIS_HOST:-redis-talkmaster}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_URL: ${REDIS_URL:-redis://redis-talkmaster:6379}
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-mailpit-talkmaster}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Talkmaster}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost,127.0.0.1,localhost:5442}
+      LARAVEL_RUN_MIGRATIONS: ${LARAVEL_RUN_MIGRATIONS:-true}
+      LARAVEL_GENERATE_APP_KEY: ${LARAVEL_GENERATE_APP_KEY:-true}
+      LARAVEL_STORAGE_LINK: ${LARAVEL_STORAGE_LINK:-true}
+      LARAVEL_OPTIMIZE: ${LARAVEL_OPTIMIZE:-true}
+      ENABLE_LARAVEL_HORIZON: ${ENABLE_LARAVEL_HORIZON:-true}
+      ENABLE_LARAVEL_SCHEDULER: ${ENABLE_LARAVEL_SCHEDULER:-true}
+    ports:
+      - "${FORWARD_BACK_PORT:-8080}:8080"
+    depends_on:
+      - postgres-talkmaster
+      - redis-talkmaster
+      - mailpit-talkmaster
+
+  postgres-talkmaster:
+    image: postgres:15
+    container_name: postgres-talkmaster
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-talkmaster}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_DATABASE:-talkmaster_database}
+    volumes:
+      - postgres-talkmaster:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME:-talkmaster}"]
+      retries: 5
+      interval: 5s
+      timeout: 5s
+    networks:
+      - talkmaster
+
+  redis-talkmaster:
+    image: redis:alpine
+    container_name: redis-talkmaster
+    volumes:
+      - redis-talkmaster:/data
+    networks:
+      - talkmaster
+
+  mailpit-talkmaster:
+    image: axllent/mailpit:latest
+    container_name: mailpit-talkmaster
+    ports:
+      - "${FORWARD_MAIL_UI_PORT:-8025}:8025"
+      - "${FORWARD_MAIL_SMTP_PORT:-1025}:1025"
+    volumes:
+      - mailpit-talkmaster:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATA_FILE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - talkmaster
+
+networks:
+  talkmaster:
+    driver: bridge
+
+volumes:
+  postgres-talkmaster:
+  redis-talkmaster:
+  mailpit-talkmaster:
+  laravel-storage:
