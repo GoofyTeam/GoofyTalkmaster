@@ -90,7 +90,10 @@ RUN --mount=type=cache,target=/var/cache/apk \
   /var/log/nginx \
   /var/log/php-fpm \
   /run/php \
-  && chown -R ${USER_NAME}:${GROUP_NAME} /var/log
+  /var/lib/nginx \
+  /var/lib/nginx/tmp \
+  /var/lib/nginx/logs \
+  && chown -R ${USER_NAME}:${GROUP_NAME} /var/log /var/lib/nginx
 
 COPY --from=extensions /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
@@ -111,6 +114,7 @@ RUN chmod +x /usr/local/bin/prod.final.entrypoint.sh \
   /usr/local/bin/prod.final.entrypoint.sh \
   /var/log \
   /run/php \
+  /var/lib/nginx \
   && find $WORKDIR -type f -exec chmod 664 {} + \
   && find $WORKDIR -type d -exec chmod 775 {} +
 
