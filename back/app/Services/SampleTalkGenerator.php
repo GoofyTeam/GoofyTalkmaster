@@ -109,12 +109,15 @@ class SampleTalkGenerator
 
     private function createScheduledTalk(string $date, string $start, string $end, int $roomId): Talk
     {
-        return Talk::factory()->create([
+        /** @var Talk $talk */
+        $talk = Talk::factory()->create([
             'status' => 'scheduled',
             'scheduled_date' => $date,
             'start_time' => $start,
             'end_time' => $end,
             'room_id' => $roomId,
         ]);
+
+        return $talk;
     }
 }
