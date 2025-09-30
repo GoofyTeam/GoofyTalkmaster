@@ -118,8 +118,43 @@ prepare_env_file() {
 setup_permissions() {
   info "Ensuring correct permissions on application directories..."
   mkdir -p "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
-  chown -R "$USER_NAME":"$USER_NAME" "$WEB_ROOT" /var/log/nginx /var/log/php-fpm /run/php
-  chmod -R 775 "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
+
+  local system_dirs=(
+    /var/log/nginx
+    /var/log/php-fpm
+    /run/php
+    /var/lib/nginx
+    /var/lib/nginx/tmp
+    /var/lib/nginx/logs
+    /var/lib/nginx/tmp/client_body
+    /var/lib/nginx/tmp/proxy
+    /var/lib/nginx/tmp/fastcgi
+    /var/lib/nginx/tmp/uwsgi
+    /var/lib/nginx/tmp/scgi
+  )
+
+  for dir in "${system_dirs[@]}"; do
+    if ! mkdir -p "$dir"; then
+      warning "Unable to create directory $dir (permissions issue?)."
+      continue
+    fi
+
+    if ! chown "$USER_NAME":"$USER_NAME" "$dir"; then
+      warning "Unable to change ownership of $dir."
+    fi
+
+    if ! chmod 775 "$dir"; then
+      warning "Unable to adjust permissions on $dir."
+    fi
+  done
+
+  if ! chown -R "$USER_NAME":"$USER_NAME" "$WEB_ROOT"; then
+    warning "Unable to change ownership of application files in $WEB_ROOT."
+  fi
+
+  if ! chmod -R 775 "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"; then
+    warning "Unable to update permissions for Laravel writable directories."
+  fi
 }
 
 configure_supervisor() {
@@ -259,6 +294,12 @@ main() {
     artisan_cmd "migrate --force"
   else
     info "Skipping database migrations (LARAVEL_RUN_MIGRATIONS=${LARAVEL_RUN_MIGRATIONS:-false})."
+  fi
+
+  if bool_is_true "${LARAVEL_RUN_SEEDERS:-true}"; then
+    artisan_cmd "db:seed --force"
+  else
+    info "Skipping database seeding (LARAVEL_RUN_SEEDERS=${LARAVEL_RUN_SEEDERS:-false})."
   fi
 
   if bool_is_true "${LARAVEL_OPTIMIZE:-true}"; then

@@ -340,7 +340,7 @@ class UserController extends Controller
         $authUser = $request->user();
 
         // Vérifier si l'utilisateur peut mettre à jour ce profil
-        if (! ($authUser->id === $user->id || $authUser->isSuperadmin() || $authUser->isOrganizer())) {
+        if (! ($authUser->id === $user->id || $authUser->isSuperAdmin() || $authUser->isOrganizer())) {
             /**
              * Accès non autorisé - L'utilisateur n'a pas les droits requis
              *
@@ -400,7 +400,7 @@ class UserController extends Controller
         ];
 
         // Seuls les superadmin et organizer peuvent modifier les rôles
-        if ($authUser->isSuperadmin() || $authUser->isOrganizer()) {
+        if ($authUser->isSuperAdmin() || $authUser->isOrganizer()) {
             /**
              * Rôle attribué à l'utilisateur
              *
@@ -439,7 +439,7 @@ class UserController extends Controller
         }
 
         // Mettre à jour le rôle si autorisé
-        if (($authUser->isSuperadmin() || $authUser->isOrganizer()) && $request->filled('role')) {
+        if (($authUser->isSuperAdmin() || $authUser->isOrganizer()) && $request->filled('role')) {
             $userData['role'] = $request->input('role');
         }
 
@@ -482,7 +482,7 @@ class UserController extends Controller
         $authUser = $request->user();
 
         // Seuls les superadmin et organizer peuvent supprimer des utilisateurs
-        if (! ($authUser->isSuperadmin() || $authUser->isOrganizer())) {
+        if (! ($authUser->isSuperAdmin() || $authUser->isOrganizer())) {
             /**
              * Accès non autorisé - L'utilisateur n'a pas les droits requis
              *
@@ -496,7 +496,7 @@ class UserController extends Controller
         }
 
         // Un organizer ne peut pas supprimer un superadmin
-        if ($authUser->isOrganizer() && $user->isSuperadmin()) {
+        if ($authUser->isOrganizer() && $user->isSuperAdmin()) {
             /**
              * Accès non autorisé - Un organisateur ne peut pas supprimer un superadmin
              *
@@ -553,7 +553,7 @@ class UserController extends Controller
         $authUser = $request->user();
 
         // Vérifier les permissions
-        if (! ($authUser->isSuperadmin() || $authUser->isOrganizer())) {
+        if (! ($authUser->isSuperAdmin() || $authUser->isOrganizer())) {
             /**
              * Accès non autorisé - L'utilisateur n'a pas les droits requis
              *
@@ -613,7 +613,7 @@ class UserController extends Controller
         $authUser = $request->user();
 
         // Vérifier les permissions
-        if (! ($authUser->isSuperadmin() || $authUser->isOrganizer())) {
+        if (! ($authUser->isSuperAdmin() || $authUser->isOrganizer())) {
             /**
              * Accès non autorisé - L'utilisateur n'a pas les droits requis
              *

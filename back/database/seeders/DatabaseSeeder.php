@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,49 +13,81 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Super',
-            'first_name' => 'Admin',
-            'email' => 'superadmin@test.com',
-            'role' => 'superadmin',
-        ]);
-
-        User::factory()->create([
-            'name' => 'MyUser',
-            'first_name' => 'User',
-            'email' => 'user@test.com',
-            'role' => 'public',
-        ]);
-        User::factory()->create([
-            'name' => 'MyUser2',
-            'first_name' => 'User',
-            'email' => 'user2@test.com',
-            'role' => 'public',
-        ]);
-        User::factory()->create([
-            'name' => 'MyUser3',
-            'first_name' => 'User',
-            'email' => 'user3@test.com',
-            'role' => 'public',
-        ]);
-        User::factory()->create([
-            'name' => 'MyUser4',
-            'first_name' => 'User',
-            'email' => 'user4@test.com',
-            'role' => 'public',
-        ]);
-
-        User::factory(10)->create([
-            'role' => 'speaker',
-        ]);
-
-        User::factory(10)->create([
-            'role' => 'organizer',
-        ]);
-
-        User::factory(10)->create();
+        $this->seedDemoUsers();
+        $this->seedSpeakerPool();
+        $this->seedOrganizerPool();
+        $this->seedGeneralAudience();
 
         $this->call(RoomSeeder::class);
         $this->call(TalkSeeder::class);  // Ajout du TalkSeeder
+    }
+
+    private function seedDemoUsers(): void
+    {
+        $demoUsers = [
+            'superadmin@demo.com' => [
+                'name' => 'Demo',
+                'first_name' => 'Superadmin',
+                'role' => 'superadmin',
+            ],
+            'speaker@demo.com' => [
+                'name' => 'Demo',
+                'first_name' => 'Speaker',
+                'role' => 'speaker',
+            ],
+            'user@demo.com' => [
+                'name' => 'Demo',
+                'first_name' => 'User',
+                'role' => 'public',
+            ],
+        ];
+
+        foreach ($demoUsers as $email => $attributes) {
+            User::updateOrCreate(
+                ['email' => $email],
+                $attributes + ['password' => Hash::make('password')]
+            );
+        }
+    }
+
+    private function seedSpeakerPool(): void
+    {
+        $targetCount = 10;
+        $existingCount = User::where('role', 'speaker')
+            ->where('email', '!=', 'speaker@demo.com')
+            ->count();
+
+        $missing = max(0, $targetCount - $existingCount);
+        if ($missing > 0) {
+            User::factory($missing)->create([
+                'role' => 'speaker',
+            ]);
+        }
+    }
+
+    private function seedOrganizerPool(): void
+    {
+        $targetCount = 10;
+        $existingCount = User::where('role', 'organizer')->count();
+
+        $missing = max(0, $targetCount - $existingCount);
+        if ($missing > 0) {
+            User::factory($missing)->create([
+                'role' => 'organizer',
+            ]);
+        }
+    }
+
+    private function seedGeneralAudience(): void
+    {
+        $targetCount = 10;
+        $existingCount = User::whereNotIn('role', ['speaker', 'organizer', 'superadmin'])
+            ->where('email', '!=', 'user@demo.com')
+            ->count();
+
+        $missing = max(0, $targetCount - $existingCount);
+        if ($missing > 0) {
+            User::factory($missing)->create();
+        }
     }
 }
