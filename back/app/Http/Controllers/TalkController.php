@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Talk;
+use App\Services\SampleTalkGenerator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TalkController extends Controller
@@ -34,7 +36,7 @@ class TalkController extends Controller
         $user = $request->user();
 
         // Seuls les speakers peuvent voir leurs talks
-        if (! $user->isSpeaker() && ! $user->isOrganizer() && ! $user->isSuperadmin()) {
+        if (! $user->isSpeaker() && ! $user->isOrganizer() && ! $user->isSuperAdmin()) {
             /**
              * Accès non autorisé - L'utilisateur n'a pas les droits requis
              *
@@ -196,7 +198,7 @@ class TalkController extends Controller
         $user = $request->user();
 
         // Seul le speaker propriétaire ou un admin peut voir le talk
-        if ($talk->speaker_id !== $user->id && ! $user->isOrganizer() && ! $user->isSuperadmin()) {
+        if ($talk->speaker_id !== $user->id && ! $user->isOrganizer() && ! $user->isSuperAdmin()) {
             /**
              * Accès non autorisé - L'utilisateur n'est pas le présentateur ou un administrateur
              *
@@ -256,7 +258,7 @@ class TalkController extends Controller
         // CAS 1: SCHEDULING (par organisateur ou superadmin)
         if ($isScheduling) {
             // Vérification des autorisations pour le scheduling
-            if (! $user->isOrganizer() && ! $user->isSuperadmin()) {
+            if (! $user->isOrganizer() && ! $user->isSuperAdmin()) {
                 /**
                  * Accès non autorisé - Seul un organisateur peut programmer une conférence
                  *
@@ -547,7 +549,7 @@ class TalkController extends Controller
         $user = $request->user();
 
         // Seul un organizer ou superadmin peut changer le statut
-        if (! $user->isOrganizer() && ! $user->isSuperadmin()) {
+        if (! $user->isOrganizer() && ! $user->isSuperAdmin()) {
             /**
              * Accès non autorisé - Seuls les organisateurs peuvent modifier le statut
              *
@@ -596,6 +598,28 @@ class TalkController extends Controller
         return response()->json([
             'message' => 'Talk status updated successfully',
             'talk' => $talk,
+        ]);
+    }
+
+    /**
+     * Générer des conférences de démonstration autour de la date actuelle.
+     *
+     * Réservé aux superadmins afin de rapidement remplir l'application avec des
+     * talks passés, présents et futurs utiles pour la démonstration.
+     */
+    public function generateSample(Request $request, SampleTalkGenerator $generator)
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->isSuperAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $stats = DB::transaction(fn () => $generator->generate());
+
+        return response()->json([
+            'message' => 'Sample talks generated successfully',
+            'stats' => $stats,
         ]);
     }
 

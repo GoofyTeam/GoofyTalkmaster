@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/talks/{id}', [TalkController::class, 'show']);
     Route::put('/talks/{id}', [TalkController::class, 'update']);
     Route::delete('/talks/{id}', [TalkController::class, 'destroy']);
+    Route::post('/talks/generate-sample', [TalkController::class, 'generateSample']);
 
     // Routes pour les favoris
     Route::get('/user/favorites', [FavoriteController::class, 'index']);
