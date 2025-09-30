@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,35 +14,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name' => 'Super',
-            'first_name' => 'Admin',
-            'email' => 'superadmin@test.com',
+            'name' => 'Demo',
+            'first_name' => 'Superadmin',
+            'email' => 'superadmin@demo.com',
             'role' => 'superadmin',
+            'password' => Hash::make('password'),
         ]);
 
         User::factory()->create([
-            'name' => 'MyUser',
-            'first_name' => 'User',
-            'email' => 'user@test.com',
-            'role' => 'public',
+            'name' => 'Demo',
+            'first_name' => 'Speaker',
+            'email' => 'speaker@demo.com',
+            'role' => 'speaker',
+            'password' => Hash::make('password'),
         ]);
+
         User::factory()->create([
-            'name' => 'MyUser2',
+            'name' => 'Demo',
             'first_name' => 'User',
-            'email' => 'user2@test.com',
+            'email' => 'user@demo.com',
             'role' => 'public',
-        ]);
-        User::factory()->create([
-            'name' => 'MyUser3',
-            'first_name' => 'User',
-            'email' => 'user3@test.com',
-            'role' => 'public',
-        ]);
-        User::factory()->create([
-            'name' => 'MyUser4',
-            'first_name' => 'User',
-            'email' => 'user4@test.com',
-            'role' => 'public',
+            'password' => Hash::make('password'),
         ]);
 
         User::factory(10)->create([
