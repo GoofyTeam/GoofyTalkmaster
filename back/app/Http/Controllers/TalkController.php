@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Talk;
+use App\Services\SampleTalkGenerator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TalkController extends Controller
@@ -596,6 +598,28 @@ class TalkController extends Controller
         return response()->json([
             'message' => 'Talk status updated successfully',
             'talk' => $talk,
+        ]);
+    }
+
+    /**
+     * Générer des conférences de démonstration autour de la date actuelle.
+     *
+     * Réservé aux superadmins afin de rapidement remplir l'application avec des
+     * talks passés, présents et futurs utiles pour la démonstration.
+     */
+    public function generateSample(Request $request, SampleTalkGenerator $generator)
+    {
+        $user = $request->user();
+
+        if (! $user || ! $user->isSuperadmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $stats = DB::transaction(fn () => $generator->generate());
+
+        return response()->json([
+            'message' => 'Sample talks generated successfully',
+            'stats' => $stats,
         ]);
     }
 

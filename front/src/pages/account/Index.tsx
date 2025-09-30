@@ -1,5 +1,6 @@
 import { useAuth } from "@/auth/useAuth";
 import { Link, useLoaderData, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ function AccountPage() {
 
   const [isSaving, setIsSaving] = React.useState(false);
   const [showPasswords, setShowPasswords] = React.useState(false);
+  const [isGeneratingTalks, setIsGeneratingTalks] = React.useState(false);
 
   const [profilePicture, setProfilePicture] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
@@ -316,6 +318,75 @@ function AccountPage() {
     },
     [user, passwordForm, clearPasswordMessages, logout, navigate],
   );
+
+  const handleGenerateSampleTalks = React.useCallback(async () => {
+    if (!user) {
+      toast.error(
+        "Vous devez être connecté avec un compte superadmin pour réaliser cette action.",
+      );
+      return;
+    }
+
+    setIsGeneratingTalks(true);
+    toast.info("Génération des conférences de démonstration en cours...");
+
+    try {
+      await fetch(`${API_BASE_URL}/api/sanctum/csrf-cookie`, {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("XSRF-TOKEN="))
+        ?.split("=")[1];
+
+      if (!csrfToken) {
+        throw new Error("Impossible de récupérer le token CSRF");
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/talks/generate-sample`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-XSRF-TOKEN": decodeURIComponent(csrfToken),
+          },
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const message =
+          errorData?.message ||
+          `Erreur ${response.status}: ${response.statusText}`;
+        throw new Error(message);
+      }
+
+      const payload = await response.json().catch(() => null);
+
+      const scheduledCount = payload?.stats?.scheduled;
+
+      toast.success(
+        scheduledCount
+          ? `${scheduledCount} conférences programmées ont été créées avec succès.`
+          : "Conférences générées avec succès.",
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la génération des conférences";
+      toast.error(message);
+    } finally {
+      setIsGeneratingTalks(false);
+    }
+  }, [user]);
 
   // Si en chargement, afficher un indicateur
   if (loading) {
@@ -571,6 +642,30 @@ function AccountPage() {
             </Form>
           </CardContent>
         </Card>
+
+        {user.role === "superadmin" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Outils superadmin</CardTitle>
+              <CardDescription>
+                Générer rapidement des conférences de démonstration autour de la
+                date actuelle.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                type="button"
+                onClick={handleGenerateSampleTalks}
+                disabled={isGeneratingTalks}
+                className="w-full sm:w-auto"
+              >
+                {isGeneratingTalks
+                  ? "Génération en cours..."
+                  : "Générer des conférences de démonstration"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {user.role === "public" && (
           <Card>
