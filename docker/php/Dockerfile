@@ -82,7 +82,10 @@ RUN --mount=type=cache,target=/var/cache/apk \
   /etc/supervisor/conf.d \
   /var/log/supervisor \
   /var/log/nginx \
-  /var/log/php-fpm
+  /var/log/php-fpm \
+  /var/lib/nginx \
+  /var/lib/nginx/tmp \
+  /var/lib/nginx/logs
 
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
@@ -100,7 +103,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh && \
   /var/log \
   /etc/supervisor/conf.d \
   $PHP_INI_DIR/conf.d \
-  /tmp
+  /tmp \
+  /var/lib/nginx
 
 # Configuration des permissions pour Laravel
 RUN mkdir -p $WORKDIR/storage/logs $WORKDIR/storage/framework/cache $WORKDIR/storage/framework/sessions $WORKDIR/storage/framework/views $WORKDIR/bootstrap/cache && \
